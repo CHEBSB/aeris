@@ -11,6 +11,7 @@ typedef struct {	/* a 2-element struct to indicate
 class tetris {
 public:
 	tetris(char *tetrisType, int Col, int GameMatrixeRow);
+	*MatrixPos getPos();	// locate 4 cells in the gameMatrix
 private:
 	int cornerCol;		/* column (horizontal position)
 	of the lower left corner in the gameMatrix */
@@ -28,19 +29,27 @@ int main()
 	bool **gameMatrix;	// bool type: 1 for occupied space
 	int gameMatrixRow, gameMatrixCol;
 
-	// reading size from test case
+	// reading in size from test case
 
 	// allocate memory for gameMatrix
 	gameMatrix = new *bool[gameMatrixRow];
-	for (int i = 0; i < gameMatrixRow)
+	for (int i = 0; i < gameMatrixRow; i++)
 		gameMatrix[i] = new bool[gameMatrixCol];
-	
+
+	// Game start. Read in tetris in sequence
+
+	// OutPut the final result of gameMatrix
+	for (int i = 0; i < gameMatrixRow; i++) {
+		for (int j = 0; j < gameMatrixCol; j++)
+			cout << gameMatrix[i][j] << ' ';
+		cout << endl;
+	}
 
 	// finally, delete memory
-	for (int i = 0; i < gameMatrixRow)
+	for (int i = 0; i < gameMatrixRow; i++)
 		delete [] gameMatrix[i];
 	delete gameMatrix;
-	return void;
+	return 0;
 }
 
 tetris::tetris(char *tetrisType, int Col, int GameMatrixRow)
@@ -141,4 +150,15 @@ tetris::tetris(char *tetrisType, int Col, int GameMatrixRow)
 		geoshape[2] = MatrixPos{3, 0};
 		geoshape[3] = MatrixPos{3, 1};
 	} 		
+}
+
+*MatrixPos tetris::getPos() 
+{
+	MatrixPos PosInGame[4];
+
+	for (int i = 0; i < 4; i++) {
+		PosInGame[i].row = (3 - geoshape[i].row) + cornerRow;
+		PosInGame[i].col = geoshape[i].col + cornerCol;
+	}	
+	return PosInGame;
 }
