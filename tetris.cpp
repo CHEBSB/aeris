@@ -10,7 +10,7 @@ typedef struct {	/* a 2-element struct to indicate
 
 class tetris {
 public:
-	tetris(char *tetrisType, int Col, int GameMatrixeRow);
+	tetris(char *tetrisType, int Col);
 	*MatrixPos getPos();	// locate 4 cells in the gameMatrix
 private:
 	int cornerCol;		/* column (horizontal position)
@@ -52,8 +52,10 @@ int main()
 	return 0;
 }
 
-tetris::tetris(char *tetrisType, int Col, int GameMatrixRow)
-: cornerCol(Col), cornerRow(GameMatrixRow - 1) {
+tetris::tetris(char *tetrisType, int Col)
+: cornerCol(Col), cornerRow(0) {	
+	/* initially, lower -left corner is at 
+	   the row 0 and the given Col in the gameMatrix */
 	if (tetrisType == "T1") {
 		geoshape[0] = MatrixPos{2, 0};
 		geoshape[1] = MatrixPos{2, 1};
@@ -157,8 +159,8 @@ tetris::tetris(char *tetrisType, int Col, int GameMatrixRow)
 	MatrixPos PosInGame[4];
 
 	for (int i = 0; i < 4; i++) {
-		PosInGame[i].row = (3 - geoshape[i].row) + cornerRow;
-		PosInGame[i].col = geoshape[i].col + cornerCol;
+		PosInGame[i].row = cornerRow - (3 - geoshape[i].row);
+		PosInGame[i].col = geoshape[i].col + cornerCo1;
 	}	
 	return PosInGame;
 }
