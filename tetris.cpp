@@ -11,7 +11,11 @@ typedef struct {	/* a 2-element struct to indicate
 class tetris {
 public:
 	tetris(char *tetrisType, int Col);
-	*MatPos getPos();	// locate 4 cells in the gameMatrix
+	int rowTran(int index); /* given a index to an cell,
+	transform its row in tetris into row in gameMat*/
+	int colTran(int index); // similar as the above one
+	void Fall(int gameMatRow); /* when a new tetris is 
+		created, let it fall until hit something*/
 private:
 	int cornerCol;		/* column (horizontal position)
 	of the lower left corner in the gameMatrix */
@@ -21,35 +25,48 @@ private:
 	that has a square cell */
 };
 
-void Fall(tetris& newCome, int gameMatRow);	/* whenever there
-is a new tetris coming from above, let it fall until hit something */
+bool **gameMat; /* the playing matrix;
+	value "true" for occupied space */
+
+void elimination(int, int);	/* check if any row in gameMat 
+	are full of cells and can be eliminated */
+
+bool gg(int NumColGame);	/*after elimination, check 
+if any cell outside playing matrix -> game over!*/ 
 
 int main()
 {
-	bool **gameMat;	// bool type: 1 for occupied space
-	int gameMatRow, gameMatCol;
-	char *tetrisT;	// for tetris constructor
+	int gameMatRow, gameMatCol;	/* number of 
+			rows and cols for gameMat */
+	char tetrisT[3];	// for tetris constructor
 	int tetrisCol;
+
+	int i, j;	// looping index
 
 	// reading in size from test case
 
 	// allocate memory for gameMatrix
 	gameMat = new *bool[gameMatRow + 4];
-	for (int i = 0; i < gameMatRow + 4; i++)
+	for (i = 0; i < gameMatRow + 4; i++)
 		gameMat[i] = new bool[gameMatCol];
 	// 4 extra rows for tetris outside the game scene
+
+	// init gameMat with all false
+	for (i = 0; i < gameMatRow + 4; i++)
+		for (j = 0; j < gameMatCol; j++)
+			gameMat[i][j] = false;
 
 	// Game start. Read in tetris in sequence
 
 	// OutPut the final result of gameMatrix
-	for (int i = 4; i < gameMatRow + 4; i++) {
-		for (int j = 0; j < gameMatCol; j++)
-			cout << gameMat[i][j] << ' ';
+	for (i = 4; i < gameMatRow + 4; i++) {
+		for (j = 0; j < gameMatCol; j++)
+			cout << gameMat[i][j];
 		cout << endl;
 	}
 
 	// finally, delete memory
-	for (int i = 0; i < gameMatRow + 4; i++)
+	for (i = 0; i < gameMatRow + 4; i++)
 		delete [] gameMat[i];
 	delete gameMat;
 	return 0;
@@ -157,17 +174,62 @@ tetris::tetris(char *tetrisType, int Col)
 	} else throw "Error! No such tetris type exists!"; 		
 }
 
-*MatPos tetris::getPos() 
+int tetris::rowTran(int index)
 {
-	MatPos PosInGame[4];
+	return (cornerRow - (3 - geoshape[index].row));
+}
+int tetris::colTran(int index)
+{
+	return (geoshape[index].col + cornerCol);
+}	
 
-	for (int i = 0; i < 4; i++) {
-		PosInGame[i].row = cornerRow - (3 - geoshape[i].row);
-		PosInGame[i].col = geoshape[i].col + cornerCo1;
-	}	
-	return PosInGame;
+void tetris::Fall(int NumRowGame) { 
+// NumRowGame is the number of rows in gameMat
+	bool flag = true;    // check if it can move downward
+	while(flag) {
+		for (int i = 0; i < 4; i++) {
+			if (gameMat[rowTran(i) + 1][(rowTran(i))] 
+			|| rowTran(i) + 1 == NumRowGame) 
+			/* if the downstair is occupied, 
+			 * or it already hit the ground, */
+				flag = false;  
+				// stop falling
+		}
+		if (flag) cornerRow--;	
+	}
 }
 
-void Fall(tetris& newCome, int gameMatRow) {
-	
+void elimination(int NumRowGame, int NumColGame)
+{
+	bool flag;	// true: need to be eliminated
+	int i, j, k;	// looping index
+
+	for (i = 0; i < NumRowGame; i++) {	
+	// check each row
+		flag = true;
+		for (j = 0; j < NumColGame; j++) 
+		// check each element
+			if (gameMat[i][j] == false)	
+			// if any element is false -> can't be eliminated
+				flag = false;	
+		if (flag) {	// to eliminate a row
+			for (j = i; j > 0; j--) 	
+			// all rows above it move downward
+				// gameMat[k] = gameMat[k - 1]
+				for (int k = 0; k < NumColGame; k++) 
+					gameMat[j][k] = gameMat[j - 1][k];
+			for (j = 0; j < NumColGame; j++)
+			// fill the first row with false
+				game[0][j] = false;	
+		}
+	}
+}
+
+bool gg(int NumColGame)	// returning true means "game over" 
+{
+	// check all elements outside the playing matrix
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < NumGameCol; j++)
+			if (gameMat[i][j]) return true;
+	return false;
 }
