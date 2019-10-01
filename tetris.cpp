@@ -21,13 +21,15 @@ private:
 	that has a square cell */
 };
 
-void Fall(tetris& newCome);	/* whenever there is a new
-tetris coming from above, let it fall until hit something */
+void Fall(tetris& newCome, int gameMatrixRow);	/* whenever there
+is a new tetris coming from above, let it fall until hit something */
 
 int main()
 {
 	bool **gameMatrix;	// bool type: 1 for occupied space
 	int gameMatrixRow, gameMatrixCol;
+	char *tetrisT;	// for tetris constructor
+	int tetrisCol;
 
 	// reading in size from test case
 
@@ -151,7 +153,7 @@ tetris::tetris(char *tetrisType, int Col)
 		geoshape[1] = MatrixPos{2, 1};
 		geoshape[2] = MatrixPos{3, 0};
 		geoshape[3] = MatrixPos{3, 1};
-	} 		
+	} else throw "Error! No such type of tetris exists!"; 		
 }
 
 *MatrixPos tetris::getPos() 
@@ -163,4 +165,8 @@ tetris::tetris(char *tetrisType, int Col)
 		PosInGame[i].col = geoshape[i].col + cornerCo1;
 	}	
 	return PosInGame;
+}
+
+void Fall(tetris& newCome, int gameMatrixRow) {
+	
 }
