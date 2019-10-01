@@ -34,28 +34,29 @@ int main()
 	// reading in size from test case
 
 	// allocate memory for gameMatrix
-	gameMatrix = new *bool[gameMatrixRow];
-	for (int i = 0; i < gameMatrixRow; i++)
+	gameMatrix = new *bool[gameMatrixRow + 4];
+	for (int i = 0; i < gameMatrixRow + 4; i++)
 		gameMatrix[i] = new bool[gameMatrixCol];
+	// 4 extra rows for tetris outside the game scene
 
 	// Game start. Read in tetris in sequence
 
 	// OutPut the final result of gameMatrix
-	for (int i = 0; i < gameMatrixRow; i++) {
+	for (int i = 4; i < gameMatrixRow + 4; i++) {
 		for (int j = 0; j < gameMatrixCol; j++)
 			cout << gameMatrix[i][j] << ' ';
 		cout << endl;
 	}
 
 	// finally, delete memory
-	for (int i = 0; i < gameMatrixRow; i++)
+	for (int i = 0; i < gameMatrixRow + 4; i++)
 		delete [] gameMatrix[i];
 	delete gameMatrix;
 	return 0;
 }
 
 tetris::tetris(char *tetrisType, int Col)
-: cornerCol(Col), cornerRow(0) {	
+: cornerCol(Col), cornerRow(3) {	
 	/* initially, lower -left corner is at 
 	   the row 0 and the given Col in the gameMatrix */
 	if (tetrisType == "T1") {
@@ -153,7 +154,7 @@ tetris::tetris(char *tetrisType, int Col)
 		geoshape[1] = MatrixPos{2, 1};
 		geoshape[2] = MatrixPos{3, 0};
 		geoshape[3] = MatrixPos{3, 1};
-	} else throw "Error! No such type of tetris exists!"; 		
+	} else throw "Error! No such tetris type exists!"; 		
 }
 
 *MatrixPos tetris::getPos() 
