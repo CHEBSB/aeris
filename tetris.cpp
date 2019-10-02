@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <fstream>
 using namespace std;
 
 typedef struct {	/* a 2-element struct to indicate
@@ -41,9 +41,15 @@ int main()
 	char tetrisT[3];	// for tetris constructor
 	int tetrisCol;
 
+	// I/O files
+	ofstream finalOP;	
+	ifstream data;
+
 	int i, j;	// looping index
 
 	// reading in size from test case
+	data.open("tetris.data.txt", ios::in);
+	
 
 	// allocate memory for gameMatrix
 	gameMat = new *bool[gameMatRow + 4];
