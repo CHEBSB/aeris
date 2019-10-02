@@ -59,6 +59,10 @@ int main()
 
 	// reading in size from test case
 	data.open("tetris.data.txt", ios::in);
+	if (!data) {
+		cout << "Cannot open tetris.data.txt!\n";
+		return 1;
+	}
 	getline(data, line);
 	splitFirstLine(line, &gameMatRow, &gameMatCol);
 
@@ -88,6 +92,10 @@ int main()
 
 	// OutPut the final result of gameMatrix
 	finalOP.open("tetris.final.txt", ios::out);
+	if (!finalOP) {
+		cout << "Cannot open tetris.final.txt!\n";
+		return 1;
+	}
 	for (i = 4; i < gameMatRow + 4; i++) {
 		for (j = 0; j < gameMatCol; j++)
 			finalOP << gameMat[i][j];
