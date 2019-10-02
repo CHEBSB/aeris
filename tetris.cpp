@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string.h>
 using namespace std;
 
 typedef struct {	/* a 2-element struct to indicate
@@ -31,13 +32,20 @@ bool **gameMat; /* the playing matrix;
 void elimination(int, int);	/* check if any row in gameMat 
 	are full of cells and can be eliminated */
 
-bool gg(int NumColGame);	/*after elimination, check 
+bool ggCheck(int NumColGame);	/*after elimination, check 
 if any cell outside playing matrix -> game over!*/ 
+
+void splitFirstLine(string, int *. int *); /* split 
+	the first line from file into 2 integer*/
+
+void splitLine(string, char *, int *, bool *); /* split a line 
+read from the file into 2 parts: tetrisType and tetrisCol*/
 
 int main()
 {
 	int gameMatRow, gameMatCol;	/* number of 
 			rows and cols for gameMat */
+	tetris *Tetr;
 	char tetrisT[3];	// for tetris constructor
 	int tetrisCol;
 
@@ -45,11 +53,14 @@ int main()
 	ofstream finalOP;	
 	ifstream data;
 
+	string line; 	// to store a line read from file
 	int i, j;	// looping index
+	bool EoG = false;	// check if game is over
 
 	// reading in size from test case
 	data.open("tetris.data.txt", ios::in);
-	
+	getline(data, line);
+	splitFirstLine(line, &gameMatRow, &gameMatCol);
 
 	// allocate memory for gameMatrix
 	gameMat = new *bool[gameMatRow + 4];
@@ -63,13 +74,26 @@ int main()
 			gameMat[i][j] = false;
 
 	// Game start. Read in tetris in sequence
+	while (!EoG) {
+		getline(data, line);
+		if (!EoG) {
+			Tetr = new tetris(tetrisT, tetriCcol);
+			Tetr.Fall(gameMatRow);
+			elimination(gameMatRow, gameMatCol);
+			EoG = ggCheck(gameMatCol);
+			delete Tetr;
+		}	
+	}
+	data.close();
 
 	// OutPut the final result of gameMatrix
+	finalOP.open("tetris.final.txt", ios::out);
 	for (i = 4; i < gameMatRow + 4; i++) {
 		for (j = 0; j < gameMatCol; j++)
-			cout << gameMat[i][j];
-		cout << endl;
+			finalOP << gameMat[i][j];
+		finalOp << endl;
 	}
+	finalOP.close();
 
 	// finally, delete memory
 	for (i = 0; i < gameMatRow + 4; i++)
@@ -194,7 +218,7 @@ void tetris::Fall(int NumRowGame) {
 	bool flag = true;    // check if it can move downward
 	while(flag) {
 		for (int i = 0; i < 4; i++) {
-			if (gameMat[rowTran(i) + 1][(rowTran(i))] 
+			if (gameMat[rowTran(i) + 1][(colTran(i))] 
 			|| rowTran(i) + 1 == NumRowGame) 
 			/* if the downstair is occupied, 
 			 * or it already hit the ground, */
@@ -203,6 +227,10 @@ void tetris::Fall(int NumRowGame) {
 		}
 		if (flag) cornerRow--;	
 	}
+
+	for (int i = 0; i < 4; i++)
+		gameMat[rowTran(i)][colTran(i)] = true;
+	// finally, change the value inside gameMat
 }
 
 void elimination(int NumRowGame, int NumColGame)
@@ -231,11 +259,58 @@ void elimination(int NumRowGame, int NumColGame)
 	}
 }
 
-bool gg(int NumColGame)	// returning true means "game over" 
+bool ggCheck(int NumColGame)	// returning true means "game over" 
 {
 	// check all elements outside the playing matrix
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < NumGameCol; j++)
 			if (gameMat[i][j]) return true;
 	return false;
+}
+
+voif splitFirstLine(string lin, int *RowPt, int*ColPt)
+{ // similar to splitline (I come up with splitline first)
+	int i, j, k; 
+	char row[3];
+	char col[3];
+	
+	for (i = 0; lin[i] != ' '; i++);
+	for (j = 0; j < i; j++)
+		row[j] = lin[j];
+	for (; lin[i] == ' '; i++);
+	for (k = 0; lin[i] != '\0'; i++)
+		col[k++] = lin[i];
+	*RowPt = atoi(row);
+	*ColPt = atoi(col);
+}
+
+void splitLine(string lin. char *type, int *ColPt, bool *End)
+{
+	int i, j, k; // index
+	char col[3];
+
+	if (lin[0] == 'E' && lin[1] == 'N' && lin [2] == 'D') {
+		*End = true;
+		return void;
+	}	
+
+	for (i = 0; lin[i] != ' '; i++);
+	// after this, i is the positon of first whitespace
+	
+	for (j = 0; j < i; j++) 
+		type[j] = lin[j]; 
+	// store the first part into type
+
+	for (; lin[i] == ' '; i++);
+	// i become teh==he start of the second part
+	
+	for (k = 0; lin[i] != '\0'; i++) 
+		col[k++] = lin[i];
+	// store th second part into col
+
+	*ColPt = atoi(col) - 1; /* transfer col to integer
+	, and decre it before assign 
+	(because for array index,
+	when we say 1 of common sense,
+	we actually means [0] in programming language) */
 }
