@@ -35,7 +35,7 @@ void elimination(int, int);	/* check if any row in gameMat
 bool ggCheck(int NumColGame);	/*after elimination, check 
 if any cell outside playing matrix -> game over!*/ 
 
-void splitFirstLine(string, int *. int *); /* split 
+void splitFirstLine(string, int *, int *); /* split 
 	the first line from file into 2 integer*/
 
 void splitLine(string, char *, int *, bool *); /* split a line 
@@ -63,7 +63,7 @@ int main()
 	splitFirstLine(line, &gameMatRow, &gameMatCol);
 
 	// allocate memory for gameMatrix
-	gameMat = new *bool[gameMatRow + 4];
+	gameMat = new bool*[gameMatRow + 4];
 	for (i = 0; i < gameMatRow + 4; i++)
 		gameMat[i] = new bool[gameMatCol];
 	// 4 extra rows for tetris outside the game scene
@@ -77,8 +77,8 @@ int main()
 	while (!EoG) {
 		getline(data, line);
 		if (!EoG) {
-			Tetr = new tetris(tetrisT, tetriCcol);
-			Tetr.Fall(gameMatRow);
+			Tetr = new tetris(tetrisT, tetrisCol);
+			Tetr->Fall(gameMatRow);
 			elimination(gameMatRow, gameMatCol);
 			EoG = ggCheck(gameMatCol);
 			delete Tetr;
@@ -91,7 +91,7 @@ int main()
 	for (i = 4; i < gameMatRow + 4; i++) {
 		for (j = 0; j < gameMatCol; j++)
 			finalOP << gameMat[i][j];
-		finalOp << endl;
+		finalOP << endl;
 	}
 	finalOP.close();
 
@@ -254,7 +254,7 @@ void elimination(int NumRowGame, int NumColGame)
 					gameMat[j][k] = gameMat[j - 1][k];
 			for (j = 0; j < NumColGame; j++)
 			// fill the first row with false
-				game[0][j] = false;	
+				gameMat[0][j] = false;	
 		}
 	}
 }
@@ -263,12 +263,12 @@ bool ggCheck(int NumColGame)	// returning true means "game over"
 {
 	// check all elements outside the playing matrix
 	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < NumGameCol; j++)
+		for (int j = 0; j < NumColGame; j++)
 			if (gameMat[i][j]) return true;
 	return false;
 }
 
-voif splitFirstLine(string lin, int *RowPt, int*ColPt)
+void splitFirstLine(string lin, int *RowPt, int*ColPt)
 { // similar to splitline (I come up with splitline first)
 	int i, j, k; 
 	char row[3];
@@ -284,14 +284,14 @@ voif splitFirstLine(string lin, int *RowPt, int*ColPt)
 	*ColPt = atoi(col);
 }
 
-void splitLine(string lin. char *type, int *ColPt, bool *End)
+void splitLine(string lin, char *type, int *ColPt, bool *End)
 {
 	int i, j, k; // index
 	char col[3];
 
 	if (lin[0] == 'E' && lin[1] == 'N' && lin [2] == 'D') {
 		*End = true;
-		return void;
+		return;
 	}	
 
 	for (i = 0; lin[i] != ' '; i++);
