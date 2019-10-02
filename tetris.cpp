@@ -297,7 +297,7 @@ void splitLine(string lin, char *type, int *ColPt, bool *End)
 	int i, j, k; // index
 	char col[3];
 
-	if (lin[0] == 'E' && lin[1] == 'N' && lin [2] == 'D') {
+	if (lin[0] == 'E' && lin[1] == 'n' && lin [2] == 'd') {
 		*End = true;
 		return;
 	}	
