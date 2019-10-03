@@ -80,6 +80,7 @@ int main()
 	// Game start. Read in tetris in sequence
 	while (!EoG) {
 		getline(data, line);
+		splitline(line, tetrisT, &tetrisCol, &EoG);
 		if (!EoG) {
 			Tetr = new tetris(tetrisT, tetrisCol);
 			Tetr->Fall(gameMatRow);
@@ -306,7 +307,8 @@ void splitLine(string lin, char *type, int *ColPt, bool *End)
 	// after this, i is the positon of first whitespace
 	
 	for (j = 0; j < i; j++) 
-		type[j] = lin[j]; 
+		type[j] = lin[j];
+	type[j] = '\0';
 	// store the first part into type
 
 	for (; lin[i] == ' '; i++);
