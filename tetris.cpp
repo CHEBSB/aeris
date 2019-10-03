@@ -80,7 +80,7 @@ int main()
 	// Game start. Read in tetris in sequence
 	while (!EoG) {
 		getline(data, line);
-		splitline(line, tetrisT, &tetrisCol, &EoG);
+		splitLine(line, tetrisT, &tetrisCol, &EoG);
 		if (!EoG) {
 			Tetr = new tetris(tetrisT, tetrisCol);
 			Tetr->Fall(gameMatRow);
