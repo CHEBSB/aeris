@@ -65,6 +65,7 @@ int main()
 	}
 	getline(data, line);
 	splitFirstLine(line, &gameMatRow, &gameMatCol);
+	cout << "The First line: " << line << endl;/**/
 
 	// allocate memory for gameMatrix
 	gameMat = new bool*[gameMatRow + 4];
@@ -80,6 +81,7 @@ int main()
 	// Game start. Read in tetris in sequence
 	while (!EoG) {
 		getline(data, line);
+		cout << "The Line: " << line << endl; /**/
 		splitLine(line, tetrisT, &tetrisCol, &EoG);
 		if (!EoG) {
 			Tetr = new tetris(tetrisT, tetrisCol);
@@ -205,7 +207,7 @@ tetris::tetris(char *tetrisType, int Col)
 		geoshape[1] = MatPos{3, 1};
 		geoshape[2] = MatPos{3, 2};
 		geoshape[3] = MatPos{3, 3};
-	} else if (tetrisType == "O") {
+	} else if (tetrisType[0] == 'O' && tetrisType[1] == '\0') {
 		geoshape[0] = MatPos{2, 0};
 		geoshape[1] = MatPos{2, 1};
 		geoshape[2] = MatPos{3, 0};
