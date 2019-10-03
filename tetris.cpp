@@ -46,7 +46,7 @@ int main()
 	int gameMatRow, gameMatCol;	/* number of 
 			rows and cols for gameMat */
 	tetris *Tetr;
-	char tetrisT[3];	// for tetris constructor
+	char *tetrisT;	// for tetris constructor
 	int tetrisCol;
 
 	// I/O files
@@ -85,6 +85,7 @@ int main()
 		splitLine(line, tetrisT, &tetrisCol, &EoG);
 		if (!EoG) {
 			Tetr = new tetris(tetrisT, tetrisCol);
+			delete [] tetrisT;
 			Tetr->Fall(gameMatRow);
 			elimination(gameMatRow, gameMatCol);
 			EoG = ggCheck(gameMatCol);
@@ -117,97 +118,109 @@ tetris::tetris(char *tetrisType, int Col)
 : cornerCol(Col), cornerRow(3) {	
 	/* initially, lower -left corner is at 
 	   the row 0 and the given Col in the gameMatrix */
-	if (tetrisType == "T1") {
-		geoshape[0] = MatPos{2, 0};
-		geoshape[1] = MatPos{2, 1};
-		geoshape[2] = MatPos{2, 2};
-		geoshape[3] = MatPos{3, 1};
-	} else if (tetrisType == "T2") {
-		geoshape[0] = MatPos{1, 1};
-		geoshape[1] = MatPos{2, 0};
-		geoshape[2] = MatPos{2, 1};
-		geoshape[3] = MatPos{3, 1};
-	} else if (tetrisType == "T3") {
-		geoshape[0] = MatPos{2, 1};
-		geoshape[1] = MatPos{3, 0};
-		geoshape[2] = MatPos{3, 1};
-		geoshape[3] = MatPos{3, 2};
-	} else if (tetrisType == "T4") {
-		geoshape[0] = MatPos{1, 0};
-		geoshape[1] = MatPos{2, 0};
-		geoshape[2] = MatPos{2, 1};
-		geoshape[3] = MatPos{3, 0};
-	} else if (tetrisType == "L1") {
-		geoshape[0] = MatPos{1, 0};
-		geoshape[1] = MatPos{2, 0};
-		geoshape[2] = MatPos{3, 0};
-		geoshape[3] = MatPos{3, 1};
-	} else if (tetrisType == "L2") {
-		geoshape[0] = MatPos{2, 0};
-		geoshape[1] = MatPos{2, 1};
-		geoshape[2] = MatPos{2, 2};
-		geoshape[3] = MatPos{3, 0};
-	} else if (tetrisType == "L3") {
-		geoshape[0] = MatPos{1, 0};
-		geoshape[1] = MatPos{1, 1};
-		geoshape[2] = MatPos{2, 1};
-		geoshape[3] = MatPos{3, 1};
-	} else if (tetrisType == "L4") {
-		geoshape[0] = MatPos{2, 2};
-		geoshape[1] = MatPos{3, 0};
-		geoshape[2] = MatPos{3, 1};
-		geoshape[3] = MatPos{3, 2};
-	} else if (tetrisType == "J1") {
-		geoshape[0] = MatPos{1, 1};
-		geoshape[1] = MatPos{2, 1};
-		geoshape[2] = MatPos{3, 0};
-		geoshape[3] = MatPos{3, 1};
-	} else if (tetrisType == "J2") {
-		geoshape[0] = MatPos{2, 0};
-		geoshape[1] = MatPos{3, 0};
-		geoshape[2] = MatPos{3, 1};
-		geoshape[3] = MatPos{3, 2};
-	} else if (tetrisType == "J3") {
-		geoshape[0] = MatPos{1, 0};
-		geoshape[1] = MatPos{1, 1};
-		geoshape[2] = MatPos{2, 0};
-		geoshape[3] = MatPos{3, 0};
-	} else if (tetrisType == "J4") {
-		geoshape[0] = MatPos{2, 0};
-		geoshape[1] = MatPos{2, 1};
-		geoshape[2] = MatPos{2, 2};
-		geoshape[3] = MatPos{3, 2};
-	} else if (tetrisType == "S1") {
-		geoshape[0] = MatPos{2, 1};
-		geoshape[1] = MatPos{2, 2};
-		geoshape[2] = MatPos{3, 0};
-		geoshape[3] = MatPos{3, 1};
-	} else if (tetrisType == "S2") {
-		geoshape[0] = MatPos{1, 0};
-		geoshape[1] = MatPos{2, 0};
-		geoshape[2] = MatPos{2, 1};
-		geoshape[3] = MatPos{3, 1};
-	} else if (tetrisType == "Z1") {
-		geoshape[0] = MatPos{2, 0};
-		geoshape[1] = MatPos{2, 1};
-		geoshape[2] = MatPos{3, 1};
-		geoshape[3] = MatPos{3, 2};
-	} else if (tetrisType == "Z2") {
-		geoshape[0] = MatPos{1, 1};
-		geoshape[1] = MatPos{2, 0};
-		geoshape[2] = MatPos{2, 1};
-		geoshape[3] = MatPos{3, 0};
-	} else if (tetrisType == "I1") {
-		geoshape[0] = MatPos{0, 0};
-		geoshape[1] = MatPos{1, 0};
-		geoshape[2] = MatPos{2, 0};
-		geoshape[3] = MatPos{3, 0};
-	} else if (tetrisType == "I2") {
-		geoshape[0] = MatPos{3, 0};
-		geoshape[1] = MatPos{3, 1};
-		geoshape[2] = MatPos{3, 2};
-		geoshape[3] = MatPos{3, 3};
-	} else if (tetrisType[0] == 'O' && tetrisType[1] == '\0') {
+	if (tetrisType[0] = 'T') {
+		if (tetrisType == "T1") {
+			geoshape[0] = MatPos{2, 0};
+			geoshape[1] = MatPos{2, 1};
+			geoshape[2] = MatPos{2, 2};
+			geoshape[3] = MatPos{3, 1};
+		} else if (tetrisType == "T2") {
+			geoshape[0] = MatPos{1, 1};
+			geoshape[1] = MatPos{2, 0};
+			geoshape[2] = MatPos{2, 1};
+			geoshape[3] = MatPos{3, 1};
+		} else if (tetrisType == "T3") {
+			geoshape[0] = MatPos{2, 1};
+			geoshape[1] = MatPos{3, 0};
+			geoshape[2] = MatPos{3, 1};
+			geoshape[3] = MatPos{3, 2};
+		} else if (tetrisType == "T4") {
+			geoshape[0] = MatPos{1, 0};
+			geoshape[1] = MatPos{2, 0};
+			geoshape[2] = MatPos{2, 1};
+			geoshape[3] = MatPos{3, 0};
+		}
+	} else if (tetrisType[0] == 'L') {
+		if (tetrisType == "L1") {
+			geoshape[0] = MatPos{1, 0};
+			geoshape[1] = MatPos{2, 0};
+			geoshape[2] = MatPos{3, 0};
+			geoshape[3] = MatPos{3, 1};
+		} else if (tetrisType == "L2") {
+			geoshape[0] = MatPos{2, 0};
+			geoshape[1] = MatPos{2, 1};
+			geoshape[2] = MatPos{2, 2};
+			geoshape[3] = MatPos{3, 0};
+		} else if (tetrisType == "L3") {
+			geoshape[0] = MatPos{1, 0};
+			geoshape[1] = MatPos{1, 1};
+			geoshape[2] = MatPos{2, 1};
+			geoshape[3] = MatPos{3, 1};
+		} else if (tetrisType == "L4") {
+			geoshape[0] = MatPos{2, 2};
+			geoshape[1] = MatPos{3, 0};
+			geoshape[2] = MatPos{3, 1};
+			geoshape[3] = MatPos{3, 2};
+		}
+	} else if (tetrisType[0] == 'J') {
+		if (tetrisType == "J1") {
+			geoshape[0] = MatPos{1, 1};
+			geoshape[1] = MatPos{2, 1};
+			geoshape[2] = MatPos{3, 0};
+			geoshape[3] = MatPos{3, 1};
+		} else if (tetrisType == "J2") {
+			geoshape[0] = MatPos{2, 0};
+			geoshape[1] = MatPos{3, 0};
+			geoshape[2] = MatPos{3, 1};
+			geoshape[3] = MatPos{3, 2};
+		} else if (tetrisType == "J3") {
+			geoshape[0] = MatPos{1, 0};
+			geoshape[1] = MatPos{1, 1};
+			geoshape[2] = MatPos{2, 0};
+			geoshape[3] = MatPos{3, 0};
+		} else if (tetrisType == "J4") {
+			geoshape[0] = MatPos{2, 0};
+			geoshape[1] = MatPos{2, 1};
+			geoshape[2] = MatPos{2, 2};
+			geoshape[3] = MatPos{3, 2};	
+		} 
+	} else if (tetrisType[0] == 'S') {
+		if (tetrisType == "S1") {
+			geoshape[0] = MatPos{2, 1};
+			geoshape[1] = MatPos{2, 2};
+			geoshape[2] = MatPos{3, 0};
+			geoshape[3] = MatPos{3, 1};
+		} else if (tetrisType == "S2") {
+			geoshape[0] = MatPos{1, 0};
+			geoshape[1] = MatPos{2, 0};
+			geoshape[2] = MatPos{2, 1};
+			geoshape[3] = MatPos{3, 1};
+		}	
+	} else if (tetrisType[0] == 'Z') { 
+		if (tetrisType == "Z1") {
+			geoshape[0] = MatPos{2, 0};
+			geoshape[1] = MatPos{2, 1};
+			geoshape[2] = MatPos{3, 1};
+			geoshape[3] = MatPos{3, 2};
+		} else if (tetrisType == "Z2") {
+			geoshape[0] = MatPos{1, 1};
+			geoshape[1] = MatPos{2, 0};
+			geoshape[2] = MatPos{2, 1};
+			geoshape[3] = MatPos{3, 0};
+		}	
+	} else if (tetrisType[0] == 'I') {
+		if (tetrisType == "I1") {
+			geoshape[0] = MatPos{0, 0};
+			geoshape[1] = MatPos{1, 0};
+			geoshape[2] = MatPos{2, 0};
+			geoshape[3] = MatPos{3, 0};
+		} else if (tetrisType == "I2") {
+			geoshape[0] = MatPos{3, 0};
+			geoshape[1] = MatPos{3, 1};
+			geoshape[2] = MatPos{3, 2};
+			geoshape[3] = MatPos{3, 3};
+		}	
+	} else if (tetrisType[0] == "O") {
 		geoshape[0] = MatPos{2, 0};
 		geoshape[1] = MatPos{2, 1};
 		geoshape[2] = MatPos{3, 0};
@@ -307,10 +320,10 @@ void splitLine(string lin, char *type, int *ColPt, bool *End)
 
 	for (i = 0; lin[i] != ' '; i++);
 	// after this, i is the positon of first whitespace
-	
+
+	type = new char[i + 1];
 	for (j = 0; j < i; j++) 
 		type[j] = lin[j];
-	type[j] = '\0';
 	// store the first part into type
 
 	for (; lin[i] == ' '; i++);
