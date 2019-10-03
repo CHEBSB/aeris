@@ -9,6 +9,20 @@ typedef struct {	/* a 2-element struct to indicate
 	int col;
 } MatPos;
 
+class GameMat {
+	friend class tetris;
+public:
+	GameMat(int, int);
+	~GameMat();
+	void elimination();
+	bool ggCheck();
+	bool MatVal(int, int);
+private:
+	bool **matrix;
+	int rowSize;
+	int colSize;
+};
+
 class tetris {
 public:
 	tetris(char *tetrisType, int Col);
@@ -16,7 +30,7 @@ public:
 	int rowTran(int index); /* given a index to an cell,
 	transform its row in tetris into row in gameMat*/
 	int colTran(int index); // similar as the above one
-	void Fall(int gameMatRow); /* when a new tetris is 
+	void Fall(GameMat&); /* when a new tetris is 
 		created, let it fall until hit something*/
 private:
 	int cornerCol;		/* column (horizontal position)
@@ -27,29 +41,20 @@ private:
 	that has a square cell */
 };
 
-bool **gameMat; /* the playing matrix;
-	value "true" for occupied space */
-void elimination(int, int);	/* check if any row in gameMat 
-	are full of cells and can be eliminated */
-bool ggCheck(int NumColGame);	/*after elimination, check 
-if any cell outside playing matrix -> game over!*/ 
-void splitFirstLine(string, int *, int *); /* split 
-	the first line from file into 2 integer*/
-void splitLine(string, char [], int *, bool *); /* split a line 
+void splitFirstLine(string, int &, int &); /* split 
+the first line from file into 2 integer*/
+void splitLine(string, char [], int &, bool &);  /* split a line 
 read from the file into 2 parts: tetrisType and tetrisCol*/
 
 int main()
 {
-	int gameMatRow, gameMatCol;	/* number of 
-			rows and cols for gameMat */
+	int Row, Col;	// number of rows and cols for gameMat 
 	tetris *Tetr;
 	char tetrisT[3];	// for tetris constructor
 	int tetrisCol;
-
 	// I/O files
 	ofstream finalOP;	
 	ifstream data;
-
 	string line; 	// to store a line read from file
 	int i, j;	// looping index
 	bool EoG = false;	// check if game is over
@@ -61,29 +66,22 @@ int main()
 		return 1;
 	} 
 	getline(data, line);
-	splitFirstLine(line, &gameMatRow, &gameMatCol);
+	splitFirstLine(line, Row, Col);
 	
-	// allocate memory for gameMatrix
-	gameMat = new bool*[gameMatRow + 4];
-	for (i = 0; i < gameMatRow + 4; i++)
-		gameMat[i] = new bool[gameMatCol];
+	// construct PlayMat
+	GameMat PlayMat(Row + 4, Col); 
 	// 4 extra rows for tetris outside the game scene
-
-	// init gameMat with all false
-	for (i = 0; i < gameMatRow + 4; i++)
-		for (j = 0; j < gameMatCol; j++)
-			gameMat[i][j] = false;
 
 	// Game start. Read in tetris in sequence
 	while (!EoG) {
 		getline(data, line);
-		cout << "Line: " << line << endl;
-		splitLine(line, tetrisT, &tetrisCol, &EoG);
+		cout << "Line: " << line << endl;	// used for debug
+		splitLine(line, tetrisT, tetrisCol, EoG);	
 		if (!EoG) {
 			Tetr = new tetris(tetrisT, tetrisCol);
-			Tetr->Fall(gameMatRow);		
-			elimination(gameMatRow, gameMatCol);	
-			EoG = ggCheck(gameMatCol);		
+			Tetr->Fall(PlayMat);		
+			PlayMat.elimination();	
+			EoG = PlayMat.ggCheck();		
 			delete Tetr;				
 		}	
 	}
@@ -95,17 +93,14 @@ int main()
 		cout << "Cannot open tetris.final.txt!\n";
 		return 1;
 	}
-	for (i = 4; i < gameMatRow + 4; i++) {
-		for (j = 0; j < gameMatCol; j++)
-			finalOP << gameMat[i][j];
+	for (i = 4; i < Row + 4; i++) {
+		for (j = 0; j < Col; j++)
+			finalOP << PlayMat.MatVal(i, j);
 		finalOP << endl;
 	}
 	finalOP.close();
 
-	// finally, delete memory
-	for (i = 0; i < gameMatRow + 4; i++)
-		delete [] gameMat[i];
-	delete gameMat;
+	PlayMat.~GameMat();
 	return 0;
 }
 
@@ -234,7 +229,7 @@ int tetris::colTran(int index)
 	return (geoshape[index].col + cornerCol);
 }	
 
-void tetris::Fall(int NumRowGame) { 
+void tetris::Fall(GameMat &Mat) { 
 // NumRowGame is the number of rows in gameMat
 	bool flag = true;    // check if it can move downward
 	int i;			// looping index
@@ -242,7 +237,7 @@ void tetris::Fall(int NumRowGame) {
 	while (flag) {
 		cout << "loop enter\n";
 		for (i = 0; i < 4; i++) {
-			if (gameMat[rowTran(i) + 1][(colTran(i))] == true || rowTran(i) + 1 == NumRowGame) 
+			if (Mat.matrix[rowTran(i) + 1][(colTran(i))] == true || rowTran(i) + 1 == Mat.rowSize) 
 			// if the downstair is occupied, or it already hit the ground, 
 				flag = false;  // stop falling
 		}
@@ -250,46 +245,68 @@ void tetris::Fall(int NumRowGame) {
 	}
 
 	for (i = 0; i < 4; i++)
-		gameMat[rowTran(i)][colTran(i)] = true;
+		Mat.matrix[rowTran(i)][colTran(i)] = true;
 	// finally, change the value inside gameMat
 }
 
-void elimination(int NumRowGame, int NumColGame)
+GameMat::GameMat(int R, int C): 
+rowSize(R), colSize(C) {
+	matrix = new bool*[rowSize];
+	for (int i = 0; i < rowSize; i++)
+		matrix[i] = new bool[colSize];
+	for (int i = 0; i < rowSize; i++)
+		for (int j = 0; j < colSize; j++)
+			matrix[i][j] = false;
+}
+
+GameMat::~GameMat()
+{
+	for (int i = 0; i < rowSize; i++)
+		delete [] matrix[i];
+	delete matrix;
+}
+
+bool GameMat::MatVal(int rowIndex, int colIndex)
+{
+	return matrix[rowIndex][colIndex];
+}
+
+void GameMat::elimination()
 {
 	bool flag;	// true: need to be eliminated
 	int i, j, k;	// looping index
 
-	for (i = 0; i < NumRowGame; i++) {	
+	for (i = 0; i < rowSize; i++) {	
 	// check each row
 		flag = true;
-		for (j = 0; j < NumColGame; j++) 
+		for (j = 0; j < colSize; j++) 
 		// check each element
-			if (gameMat[i][j] == false)	
+			if (matrix[i][j] == false)	
 			// if any element is false -> can't be eliminated
 				flag = false;	
 		if (flag) {	// to eliminate a row
 			for (j = i; j > 0; j--) 	
 			// all rows above it move downward
-				// gameMat[k] = gameMat[k - 1]
-				for (int k = 0; k < NumColGame; k++) 
-					gameMat[j][k] = gameMat[j - 1][k];
-			for (j = 0; j < NumColGame; j++)
+				// matrix[k] = matrix[k - 1]
+				for (int k = 0; k < colSize; k++) 
+					matrix[j][k] = matrix[j - 1][k];
+			for (j = 0; j < colSize; j++)
 			// fill the first row with false
-				gameMat[0][j] = false;	
+				matrix[0][j] = false;	
 		}
 	}
 }
 
-bool ggCheck(int NumColGame)	// returning true means "game over" 
+bool GameMat::ggCheck()	// returning true means "game over" 
 {
 	// check all elements outside the playing matrix
 	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < NumColGame; j++)
-			if (gameMat[i][j]) return true;
+		for (int j = 0; j < colSize; j++)
+			if (matrix[i][j]) return true;
 	return false;
 }
 
-void splitFirstLine(string lin, int *RowPt, int*ColPt)
+void splitFirstLine(string lin, int &RowPt, int &ColPt)
 { // similar to splitline (I come up with splitline first)
 	int i, j, k; 
 	char row[3];
@@ -301,18 +318,18 @@ void splitFirstLine(string lin, int *RowPt, int*ColPt)
 	for (; lin[i] == ' '; i++);
 	for (k = 0; lin[i] != '\0'; i++)
 		col[k++] = lin[i];
-	*RowPt = atoi(row);
-	*ColPt = atoi(col);
+	RowPt = atoi(row);
+	ColPt = atoi(col);
 }
 
-void splitLine(string lin, char type[], int *ColPt, bool *End)
+void splitLine(string lin,char type[], int &Col, bool &End)
 {	
-	cout << "enter function";
+	cout << "enter function";	// used for debug
 	int i, j, k; // index
 	char col[3];
 			
 	if (lin[0] == 'E' && lin[1] == 'n' && lin[2] == 'd') {
-		*End = true;
+		End = true;
 		return;
 	}
 
@@ -331,7 +348,7 @@ void splitLine(string lin, char type[], int *ColPt, bool *End)
 		col[k++] = lin[i];
 	// store th second part into col
 
-	*ColPt = atoi(col) - 1; /* transfer col to integer
+	Col = atoi(col) - 1; /* transfer col to integer
 	, and decre it before assign 
 	(because for array index,
 	when we say 1 of common sense,
