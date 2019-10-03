@@ -12,6 +12,7 @@ typedef struct {	/* a 2-element struct to indicate
 class tetris {
 public:
 	tetris(char *tetrisType, int Col);
+	~tetris() {}
 	int rowTran(int index); /* given a index to an cell,
 	transform its row in tetris into row in gameMat*/
 	int colTran(int index); // similar as the above one
@@ -28,17 +29,13 @@ private:
 
 bool **gameMat; /* the playing matrix;
 	value "true" for occupied space */
-
 void elimination(int, int);	/* check if any row in gameMat 
 	are full of cells and can be eliminated */
-
 bool ggCheck(int NumColGame);	/*after elimination, check 
 if any cell outside playing matrix -> game over!*/ 
-
 void splitFirstLine(string, int *, int *); /* split 
 	the first line from file into 2 integer*/
-
-void splitLine(string, char *, int *, bool *); /* split a line 
+void splitLine(string, char [], int *, bool *); /* split a line 
 read from the file into 2 parts: tetrisType and tetrisCol*/
 
 int main()
@@ -46,7 +43,7 @@ int main()
 	int gameMatRow, gameMatCol;	/* number of 
 			rows and cols for gameMat */
 	tetris *Tetr;
-	char *tetrisT;	// for tetris constructor
+	char tetrisT[3];	// for tetris constructor
 	int tetrisCol;
 
 	// I/O files
@@ -62,11 +59,10 @@ int main()
 	if (!data) {
 		cout << "Cannot open tetris.data.txt!\n";
 		return 1;
-	}
+	} 
 	getline(data, line);
 	splitFirstLine(line, &gameMatRow, &gameMatCol);
-	cout << "The First line: " << line << endl;/**/
-
+	
 	// allocate memory for gameMatrix
 	gameMat = new bool*[gameMatRow + 4];
 	for (i = 0; i < gameMatRow + 4; i++)
@@ -81,15 +77,14 @@ int main()
 	// Game start. Read in tetris in sequence
 	while (!EoG) {
 		getline(data, line);
-		cout << "The Line: " << line << endl; /**/
+		cout << "Line: " << line << endl;
 		splitLine(line, tetrisT, &tetrisCol, &EoG);
 		if (!EoG) {
 			Tetr = new tetris(tetrisT, tetrisCol);
-			delete [] tetrisT;
-			Tetr->Fall(gameMatRow);
-			elimination(gameMatRow, gameMatCol);
-			EoG = ggCheck(gameMatCol);
-			delete Tetr;
+			Tetr->Fall(gameMatRow);		
+			elimination(gameMatRow, gameMatCol);	
+			EoG = ggCheck(gameMatCol);		
+			delete Tetr;				
 		}	
 	}
 	data.close();
@@ -242,19 +237,19 @@ int tetris::colTran(int index)
 void tetris::Fall(int NumRowGame) { 
 // NumRowGame is the number of rows in gameMat
 	bool flag = true;    // check if it can move downward
-	while(flag) {
-		for (int i = 0; i < 4; i++) {
-			if (gameMat[rowTran(i) + 1][(colTran(i))] 
-			|| rowTran(i) + 1 == NumRowGame) 
-			/* if the downstair is occupied, 
-			 * or it already hit the ground, */
-				flag = false;  
-				// stop falling
+	int i;			// looping index
+
+	while (flag) {
+		cout << "loop enter\n";
+		for (i = 0; i < 4; i++) {
+			if (gameMat[rowTran(i) + 1][(colTran(i))] == true || rowTran(i) + 1 == NumRowGame) 
+			// if the downstair is occupied, or it already hit the ground, 
+				flag = false;  // stop falling
 		}
 		if (flag) cornerRow--;	
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 		gameMat[rowTran(i)][colTran(i)] = true;
 	// finally, change the value inside gameMat
 }
@@ -310,26 +305,27 @@ void splitFirstLine(string lin, int *RowPt, int*ColPt)
 	*ColPt = atoi(col);
 }
 
-void splitLine(string lin, char *type, int *ColPt, bool *End)
-{
+void splitLine(string lin, char type[], int *ColPt, bool *End)
+{	
+	cout << "enter function";
 	int i, j, k; // index
 	char col[3];
-
-	if (lin[0] == 'E' && lin[1] == 'n' && lin [2] == 'd') {
+			
+	if (lin[0] == 'E' && lin[1] == 'n' && lin[2] == 'd') {
 		*End = true;
 		return;
-	}	
+	}
 
 	for (i = 0; lin[i] != ' '; i++);
 	// after this, i is the positon of first whitespace
 
-	type = new char[i + 1];
 	for (j = 0; j < i; j++) 
 		type[j] = lin[j];
+	type[j] = '\0';
 	// store the first part into type
 
 	for (; lin[i] == ' '; i++);
-	// i become teh==he start of the second part
+	// i become the start of the second part
 	
 	for (k = 0; lin[i] != '\0'; i++) 
 		col[k++] = lin[i];
