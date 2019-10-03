@@ -118,114 +118,116 @@ tetris::tetris(char *tetrisType, int Col)
 : cornerCol(Col), cornerRow(3) {	
 	/* initially, lower -left corner is at 
 	   the row 0 and the given Col in the gameMatrix */
-	if (tetrisType[0] = 'T') {
-		if (tetrisType == "T1") {
+	if (tetrisType[0] == 'T') {
+		if (tetrisType[1] == '1') {
 			geoshape[0] = MatPos{2, 0};
 			geoshape[1] = MatPos{2, 1};
 			geoshape[2] = MatPos{2, 2};
 			geoshape[3] = MatPos{3, 1};
-		} else if (tetrisType == "T2") {
+		} else if (tetrisType[1] == '2') {
 			geoshape[0] = MatPos{1, 1};
 			geoshape[1] = MatPos{2, 0};
 			geoshape[2] = MatPos{2, 1};
 			geoshape[3] = MatPos{3, 1};
-		} else if (tetrisType == "T3") {
+		} else if (tetrisType[1] == '3') {
 			geoshape[0] = MatPos{2, 1};
 			geoshape[1] = MatPos{3, 0};
 			geoshape[2] = MatPos{3, 1};
 			geoshape[3] = MatPos{3, 2};
-		} else if (tetrisType == "T4") {
+		} else if (tetrisType[1] == '4') {
 			geoshape[0] = MatPos{1, 0};
 			geoshape[1] = MatPos{2, 0};
 			geoshape[2] = MatPos{2, 1};
 			geoshape[3] = MatPos{3, 0};
-		}
+		} else throw "No Such Type!";
 	} else if (tetrisType[0] == 'L') {
-		if (tetrisType == "L1") {
+		if (tetrisType[1] == '1') {
 			geoshape[0] = MatPos{1, 0};
 			geoshape[1] = MatPos{2, 0};
 			geoshape[2] = MatPos{3, 0};
 			geoshape[3] = MatPos{3, 1};
-		} else if (tetrisType == "L2") {
+		} else if (tetrisType[1] == '2') {
 			geoshape[0] = MatPos{2, 0};
 			geoshape[1] = MatPos{2, 1};
 			geoshape[2] = MatPos{2, 2};
 			geoshape[3] = MatPos{3, 0};
-		} else if (tetrisType == "L3") {
+		} else if (tetrisType[1] == '3') {
 			geoshape[0] = MatPos{1, 0};
 			geoshape[1] = MatPos{1, 1};
 			geoshape[2] = MatPos{2, 1};
 			geoshape[3] = MatPos{3, 1};
-		} else if (tetrisType == "L4") {
+		} else if (tetrisType[1] == '4') {
 			geoshape[0] = MatPos{2, 2};
 			geoshape[1] = MatPos{3, 0};
 			geoshape[2] = MatPos{3, 1};
 			geoshape[3] = MatPos{3, 2};
-		}
+		} else throw "No Such Type!";
 	} else if (tetrisType[0] == 'J') {
-		if (tetrisType == "J1") {
+		if (tetrisType[1] == '1') {
 			geoshape[0] = MatPos{1, 1};
 			geoshape[1] = MatPos{2, 1};
 			geoshape[2] = MatPos{3, 0};
 			geoshape[3] = MatPos{3, 1};
-		} else if (tetrisType == "J2") {
+		} else if (tetrisType[1] == '2') {
 			geoshape[0] = MatPos{2, 0};
 			geoshape[1] = MatPos{3, 0};
 			geoshape[2] = MatPos{3, 1};
 			geoshape[3] = MatPos{3, 2};
-		} else if (tetrisType == "J3") {
+		} else if (tetrisType[1] == '3') {
 			geoshape[0] = MatPos{1, 0};
 			geoshape[1] = MatPos{1, 1};
 			geoshape[2] = MatPos{2, 0};
 			geoshape[3] = MatPos{3, 0};
-		} else if (tetrisType == "J4") {
+		} else if (tetrisType[1] == '4') {
 			geoshape[0] = MatPos{2, 0};
 			geoshape[1] = MatPos{2, 1};
 			geoshape[2] = MatPos{2, 2};
 			geoshape[3] = MatPos{3, 2};	
-		} 
+		} else throw "No Such Type!"; 
 	} else if (tetrisType[0] == 'S') {
-		if (tetrisType == "S1") {
+		if (tetrisType[1] == '1') {
 			geoshape[0] = MatPos{2, 1};
 			geoshape[1] = MatPos{2, 2};
 			geoshape[2] = MatPos{3, 0};
 			geoshape[3] = MatPos{3, 1};
-		} else if (tetrisType == "S2") {
+		} else if (tetrisType[1] == '2') {
 			geoshape[0] = MatPos{1, 0};
 			geoshape[1] = MatPos{2, 0};
 			geoshape[2] = MatPos{2, 1};
 			geoshape[3] = MatPos{3, 1};
-		}	
+		} else throw "No Such Type!";	
 	} else if (tetrisType[0] == 'Z') { 
-		if (tetrisType == "Z1") {
+		if (tetrisType[1] == '1') {
 			geoshape[0] = MatPos{2, 0};
 			geoshape[1] = MatPos{2, 1};
 			geoshape[2] = MatPos{3, 1};
 			geoshape[3] = MatPos{3, 2};
-		} else if (tetrisType == "Z2") {
+		} else if (tetrisType[1] == '2') {
 			geoshape[0] = MatPos{1, 1};
 			geoshape[1] = MatPos{2, 0};
 			geoshape[2] = MatPos{2, 1};
 			geoshape[3] = MatPos{3, 0};
-		}	
+		} else throw "No Such Type!";	
 	} else if (tetrisType[0] == 'I') {
-		if (tetrisType == "I1") {
+		if (tetrisType[1] == '1') {
 			geoshape[0] = MatPos{0, 0};
 			geoshape[1] = MatPos{1, 0};
 			geoshape[2] = MatPos{2, 0};
 			geoshape[3] = MatPos{3, 0};
-		} else if (tetrisType == "I2") {
+		} else if (tetrisType[1] == '2') {
 			geoshape[0] = MatPos{3, 0};
 			geoshape[1] = MatPos{3, 1};
 			geoshape[2] = MatPos{3, 2};
 			geoshape[3] = MatPos{3, 3};
-		}	
-	} else if (tetrisType[0] == "O") {
-		geoshape[0] = MatPos{2, 0};
-		geoshape[1] = MatPos{2, 1};
-		geoshape[2] = MatPos{3, 0};
-		geoshape[3] = MatPos{3, 1};
-	} else throw "Error! No such tetris type exists!"; 		
+		} else throw "No Such Type!";	
+	} else if (tetrisType[0] == 'O') {
+		if (tetrisType[1] == '\0') {
+			geoshape[0] = MatPos{2, 0};
+			geoshape[1] = MatPos{2, 1};
+			geoshape[2] = MatPos{3, 0};
+			geoshape[3] = MatPos{3, 1};
+		} else throw "No Such Type!";
+	} else throw "No Such Type!"; 		
 }
 
 int tetris::rowTran(int index)
