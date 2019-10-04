@@ -3,12 +3,6 @@
 #include <string.h>
 using namespace std;
 
-typedef struct {	/* a 2-element struct to indicate
-			a certain position in a matrix */
-	int row;
-	int col;
-} MatPos;
-
 class GameMat {
 	friend class tetris;
 public:
@@ -26,25 +20,26 @@ private:
 class tetris {
 public:
 	tetris(char *tetrisType, int Col);
-	~tetris() {}
-	int rowTran(int index); /* given a index to an cell,
+	~tetris() {delete [] cellRow; delete [] cellCol;} 
+	int rowTran(int); /* given a index to an cell,
 	transform its row in tetris into row in gameMat*/
-	int colTran(int index); // similar as the above one
+	int colTran(int); // similar to the above one
 	void Fall(GameMat&); /* when a new tetris is 
 		created, let it fall until hit something*/
 private:
-	int cornerCol;		/* column (horizontal position)
+	int cornerCol;	/* column (horizontal position)
 	of the lower left corner in the gameMatrix */
-	int cornerRow;		/* current row (vertical position) 
+	int cornerRow;	/* current row (vertical position) 
 	of the lower left corner in the gamaMatrix */
-	MatPos geoshape[4];	/* indicate the 4 positions 
-	that has a square cell */
+	int *cellRow;	
+	int *cellCol;	/* indicate the 4 positions that
+	has a square cell by its row and col in tetris */
 };
 
 void splitFirstLine(string, int &, int &); /* split 
 the first line from file into 2 integer*/
-void splitLine(string, char [], int &, bool &);  /* split a line 
-read from the file into 2 parts: tetrisType and tetrisCol*/
+void splitLine(string, char [], int &, bool &);  /* split 
+a line from file into 2 parts: tetrisType and tetrisCol*/
 
 int main()
 {
@@ -110,135 +105,99 @@ tetris::tetris(char *tetrisType, int Col)
 	   the row 0 and the given Col in the gameMatrix */
 	if (tetrisType[0] == 'T') {
 		if (tetrisType[1] == '1') {
-			geoshape[0] = MatPos{2, 0};
-			geoshape[1] = MatPos{2, 1};
-			geoshape[2] = MatPos{2, 2};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{2, 2, 2, 3};
+			cellCol = new int[4]{0, 1, 2, 1};
 		} else if (tetrisType[1] == '2') {
-			geoshape[0] = MatPos{1, 1};
-			geoshape[1] = MatPos{2, 0};
-			geoshape[2] = MatPos{2, 1};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{1, 2, 2, 3};
+			cellCol = new int[4]{1, 0, 1, 1};
 		} else if (tetrisType[1] == '3') {
-			geoshape[0] = MatPos{2, 1};
-			geoshape[1] = MatPos{3, 0};
-			geoshape[2] = MatPos{3, 1};
-			geoshape[3] = MatPos{3, 2};
+			cellRow = new int[4]{2, 3, 3, 3};
+			cellCol = new int[4]{1, 0, 1, 2};
 		} else if (tetrisType[1] == '4') {
-			geoshape[0] = MatPos{1, 0};
-			geoshape[1] = MatPos{2, 0};
-			geoshape[2] = MatPos{2, 1};
-			geoshape[3] = MatPos{3, 0};
+			cellRow = new int[4]{1, 2, 2, 3};
+			cellCol = new int[4]{0, 0, 1, 0};
 		} else throw "No Such Type!";
 	} else if (tetrisType[0] == 'L') {
 		if (tetrisType[1] == '1') {
-			geoshape[0] = MatPos{1, 0};
-			geoshape[1] = MatPos{2, 0};
-			geoshape[2] = MatPos{3, 0};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{1, 2, 3, 3};
+			cellCol = new int[4]{0, 0, 0, 1};
 		} else if (tetrisType[1] == '2') {
-			geoshape[0] = MatPos{2, 0};
-			geoshape[1] = MatPos{2, 1};
-			geoshape[2] = MatPos{2, 2};
-			geoshape[3] = MatPos{3, 0};
+			cellRow = new int[4]{2, 2, 2, 3};
+			cellCol = new int[4]{0, 1, 2, 0};
 		} else if (tetrisType[1] == '3') {
-			geoshape[0] = MatPos{1, 0};
-			geoshape[1] = MatPos{1, 1};
-			geoshape[2] = MatPos{2, 1};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{1, 1, 2, 3};
+			cellCol = new int[4]{0, 1, 1, 1};
 		} else if (tetrisType[1] == '4') {
-			geoshape[0] = MatPos{2, 2};
-			geoshape[1] = MatPos{3, 0};
-			geoshape[2] = MatPos{3, 1};
-			geoshape[3] = MatPos{3, 2};
+			cellRow = new int[4]{2, 3, 3, 3};
+			cellCol = new int[4]{2, 0, 1, 2};
 		} else throw "No Such Type!";
 	} else if (tetrisType[0] == 'J') {
 		if (tetrisType[1] == '1') {
-			geoshape[0] = MatPos{1, 1};
-			geoshape[1] = MatPos{2, 1};
-			geoshape[2] = MatPos{3, 0};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{1, 2, 3, 3};
+			cellCol = new int[4]{1, 1, 0, 1};
 		} else if (tetrisType[1] == '2') {
-			geoshape[0] = MatPos{2, 0};
-			geoshape[1] = MatPos{3, 0};
-			geoshape[2] = MatPos{3, 1};
-			geoshape[3] = MatPos{3, 2};
+			cellRow = new int[4]{2, 3, 3, 3};
+			cellCol = new int[4]{0, 0, 1, 2};
 		} else if (tetrisType[1] == '3') {
-			geoshape[0] = MatPos{1, 0};
-			geoshape[1] = MatPos{1, 1};
-			geoshape[2] = MatPos{2, 0};
-			geoshape[3] = MatPos{3, 0};
+			cellRow = new int[4]{1, 1, 2, 3};
+			cellCol = new int[4]{0, 1, 0, 0};
 		} else if (tetrisType[1] == '4') {
-			geoshape[0] = MatPos{2, 0};
-			geoshape[1] = MatPos{2, 1};
-			geoshape[2] = MatPos{2, 2};
-			geoshape[3] = MatPos{3, 2};	
+			cellRow = new int[4]{2, 2, 2, 3};
+			cellCol = new int[4]{0, 1, 2, 2};	
 		} else throw "No Such Type!"; 
 	} else if (tetrisType[0] == 'S') {
 		if (tetrisType[1] == '1') {
-			geoshape[0] = MatPos{2, 1};
-			geoshape[1] = MatPos{2, 2};
-			geoshape[2] = MatPos{3, 0};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{2, 2, 3, 3};
+			cellCol = new int[4]{1, 2, 0, 1};
 		} else if (tetrisType[1] == '2') {
-			geoshape[0] = MatPos{1, 0};
-			geoshape[1] = MatPos{2, 0};
-			geoshape[2] = MatPos{2, 1};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{1, 2, 2, 3};
+			cellCol = new int[4]{0, 0, 1, 1};
 		} else throw "No Such Type!";	
 	} else if (tetrisType[0] == 'Z') { 
 		if (tetrisType[1] == '1') {
-			geoshape[0] = MatPos{2, 0};
-			geoshape[1] = MatPos{2, 1};
-			geoshape[2] = MatPos{3, 1};
-			geoshape[3] = MatPos{3, 2};
+			cellRow = new int[4]{2, 2, 3, 3};
+			cellCol = new int[4]{0, 1, 1, 2};
 		} else if (tetrisType[1] == '2') {
-			geoshape[0] = MatPos{1, 1};
-			geoshape[1] = MatPos{2, 0};
-			geoshape[2] = MatPos{2, 1};
-			geoshape[3] = MatPos{3, 0};
+			cellRow = new int[4]{1, 2, 2, 3};
+			cellCol = new int[4]{1, 0, 1, 0};
 		} else throw "No Such Type!";	
 	} else if (tetrisType[0] == 'I') {
 		if (tetrisType[1] == '1') {
-			geoshape[0] = MatPos{0, 0};
-			geoshape[1] = MatPos{1, 0};
-			geoshape[2] = MatPos{2, 0};
-			geoshape[3] = MatPos{3, 0};
+			cellRow = new int[4]{0, 1, 2, 3};
+			cellCol = new int[4]{0, 0, 0, 0};
 		} else if (tetrisType[1] == '2') {
-			geoshape[0] = MatPos{3, 0};
-			geoshape[1] = MatPos{3, 1};
-			geoshape[2] = MatPos{3, 2};
-			geoshape[3] = MatPos{3, 3};
+			cellRow = new int[4]{3, 3, 3, 3};
+			cellCol = new int[4]{0, 1, 2, 3};
 		} else throw "No Such Type!";	
 	} else if (tetrisType[0] == 'O') {
 		if (tetrisType[1] == '\0') {
-			geoshape[0] = MatPos{2, 0};
-			geoshape[1] = MatPos{2, 1};
-			geoshape[2] = MatPos{3, 0};
-			geoshape[3] = MatPos{3, 1};
+			cellRow = new int[4]{2, 2, 3, 3};
+			cellCol = new int[4]{0, 1, 0, 1};
 		} else throw "No Such Type!";
 	} else throw "No Such Type!"; 		
 }
 
 int tetris::rowTran(int index)
 {
-	return (cornerRow - (3 - geoshape[index].row));
+	return (cornerRow - (3 - cellRow[index]));
 }
 int tetris::colTran(int index)
 {
-	return (geoshape[index].col + cornerCol);
+	return (cellCol[index] + cornerCol);
 }	
 
 void tetris::Fall(GameMat &Mat) { 
 // NumRowGame is the number of rows in gameMat
-	bool flag = true;    // check if it can move downward
+	bool flag = true;    
+	// check if it can continue moving downward
 	int i;			// looping index
 
 	while (flag) {
 		cout << "loop enter\n";
 		for (i = 0; i < 4; i++) {
-			if (Mat.matrix[rowTran(i) + 1][(colTran(i))] == true || rowTran(i) + 1 == Mat.rowSize) 
-			// if the downstair is occupied, or it already hit the ground, 
+			if (Mat.matrix[rowTran(i) + 1][(colTran(i))] == true 
+			|| rowTran(i) + 1 == Mat.rowSize) /* if the downstair
+			is occupied, or it already hit the ground, */
 				flag = false;  // stop falling
 		}
 		if (flag) cornerRow--;	
@@ -251,9 +210,11 @@ void tetris::Fall(GameMat &Mat) {
 
 GameMat::GameMat(int R, int C): 
 rowSize(R), colSize(C) {
+	// allocate memory
 	matrix = new bool*[rowSize];
 	for (int i = 0; i < rowSize; i++)
 		matrix[i] = new bool[colSize];
+	// initialize with false
 	for (int i = 0; i < rowSize; i++)
 		for (int j = 0; j < colSize; j++)
 			matrix[i][j] = false;
@@ -273,7 +234,7 @@ bool GameMat::MatVal(int rowIndex, int colIndex)
 
 void GameMat::elimination()
 {
-	bool flag;	// true: need to be eliminated
+	bool flag;	// true for need to be eliminated
 	int i, j, k;	// looping index
 
 	for (i = 0; i < rowSize; i++) {	
@@ -307,7 +268,7 @@ bool GameMat::ggCheck()	// returning true means "game over"
 }
 
 void splitFirstLine(string lin, int &RowPt, int &ColPt)
-{ // similar to splitline (I come up with splitline first)
+{ // similar to splitLine 
 	int i, j, k; 
 	char row[3];
 	char col[3];
