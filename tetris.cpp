@@ -6,15 +6,14 @@ using namespace std;
 class GameMat {
 	friend class tetris;
 public:
-	GameMat() {}	// default constructot
-	~GameMat();	
+	GameMat() {}	// default constructot	
 	void init(string); /* use the first line
 		in the file to initialize this object*/
 	void elimination();	/* check if any row 
 			need to be eliminated */
 	bool ggCheck(); /* check if any tetris cell
 		is outside the playing scnene */
-	bool MatVal(int, int); 
+	void print(ofstream&);
 private:
 	bool **matrix;
 	int rowSize;
@@ -44,8 +43,7 @@ void splitLine(string, char [], int &, bool &);  /* split
 a line from file into 2 parts: tetrisType and tetrisCol */
 
 int main()
-{
-	int Row, Col;	// number of rows and cols for gameMat 
+{ 
 	tetris *Tetr;
 	char tetrT[3];	// for tetris constructor
 	int tetrCol;
@@ -54,7 +52,7 @@ int main()
 	string line; 	// to store a line read from file
 	int i, j;	// looping index
 	bool EoG = false;	// check if game is over
-	GameMat PlayMat;	
+	GameMat PlayMat;
 
 	// reading in size from test case
 	data.open("tetris.data.txt", ios::in);
@@ -66,31 +64,26 @@ int main()
 	PlayMat.init(line); 
 	// 4 extra rows for tetris outside the game scene
 	// Game start. Read in tetris in sequence
-	while (!EoG) {
+	while ((!EoG) && (!data.eof())) {
 		getline(data, line);
-		cout << "Line: " << line << endl;	// used for debug
-		splitLine(line, tetrT, tetrCol, EoG);	
+		splitLine(line, tetrT, tetrCol, EoG);
+		if (!EoG) {
+			cout << "Type: ";
+			for (i = 0; i < 3; i++) cout << tetrT[i];
+			cout << "  Col: "<< tetrCol << endl;
+		} else cout << "GG!";
+		
 		if (!EoG) {
 			Tetr = new tetris(tetrT, tetrCol);
-			Tetr->Fall(PlayMat);		
-			PlayMat.elimination();	
-			EoG = PlayMat.ggCheck();		
+			Tetr->Fall(PlayMat);	
+			PlayMat.elimination();
+			EoG = PlayMat.ggCheck();	
 			delete Tetr;				
 		}	
 	}
 	data.close();
 	// OutPut the final result of gameMatrix
-	finalOP.open("tetris.final.txt", ios::out);
-	if (!finalOP) {
-		cout << "Cannot open tetris.final.txt!\n";
-		return 1;
-	}
-	for (i = 4; i < Row + 4; i++) {
-		for (j = 0; j < Col; j++)
-			finalOP << PlayMat.MatVal(i, j);
-		finalOP << endl;
-	}
-	finalOP.close();
+	PlayMat.print(finalOP);
 	PlayMat.~GameMat();
 	return 0;
 }
@@ -173,40 +166,50 @@ lower-left corner at row 0 and given Col in the gameMat */
 }
 int tetris::rowTran(int index)
 {
-	return (cornerRow - (3 - cellRow[index]));
+	if (index < 4 && index >= 0)
+		return (cornerRow + (3 - cellRow[index]));
+	throw 404;
 }
 int tetris::colTran(int index)
-{
-	return (cellCol[index] + cornerCol);
+{	
+	if (index < 4 && index >= 0)
+		return (cornerCol + cellCol[index]);
+	throw 404;
 }	
 void tetris::Fall(GameMat &Mat) { 
 // NumRowGame is the number of rows in gameMat
 	bool flag = true;    
 	// check if it can continue moving downward
 	int i;			// looping index
-
+	
 	while (flag) {
-		cout << "loop enter\n";
-		for (i = 0; i < 4; i++) 
-			if (Mat.matrix[rowTran(i) + 1][(colTran(i))] == true 
-			|| rowTran(i) + 1 == Mat.rowSize) /* if the downstair
-			is occupied, or it already hit the ground, */
+		for (i = 0; i < 4; i++) {
+			if (rowTran(i) >= Mat.rowSize || colTran(i) >= Mat.colSize)
+				throw 'E';
+			if (rowTran(i) + 1 == Mat.rowSize) 
 				flag = false;  // stop falling
-		if (flag) cornerRow--;		
+			else if (Mat.matrix[rowTran(i) + 1][colTran(i)] == true)
+				flag = false;
+		}	
+		if (flag) cornerRow++;		
 	}
 	for (i = 0; i < 4; i++)
 		Mat.matrix[rowTran(i)][colTran(i)] = true;
 	// finally, change the value inside gameMat
 }
-GameMat::~GameMat()
+void GameMat::print(ofstream &finalOP)
 {
-	for (int i = 0; i < rowSize; i++)
-		delete [] matrix[i];
-	delete matrix;
-}
-bool GameMat::MatVal(int rowIndex, int colIndex)
-{	
-	return matrix[rowIndex][colIndex];
+	finalOP.open("tetris.final.txt", ios::out);
+	if (!finalOP) {
+		cout << "Cannnot Open tetris.final!";
+		return;
+	}
+	for (int i = 4; i < rowSize; i++) {
+		for (int j = 0; j < colSize; j++)
+			finalOP << matrix[i][j];
+		finalOP << endl;
+	}	
+	finalOP.close();
 }
 void GameMat::elimination()
 {
@@ -245,17 +248,18 @@ void GameMat::init(string lin)
 	char row[3];	// to store 1st number in input
 	char col[3];	// to store 2nd number
 	
-	for (i = 0; lin[i] != ' '; i++); /* i become 
-		the position of the first whitespace*/
-	for (j = 0; j < i; j++)	// copy the 1st number
+	for (i = 0; lin[i] != ' '; i++); /* i become the
+			index of the first whitespace*/  
+	for (j = 0; j < i && j < 2; j++)	
 		row[j] = lin[j];
 	for (; lin[i] == ' '; i++);	/* i become 
 		the first char of the second number*/
-	for (j = 0; lin[i] != '\0'; i++) // copy 2nd number 
+	for (j = 0; lin[i] != '\0' && j < 3; i++) // copy 2nd number 
 		col[j++] = lin[i];
 	rowSize = atoi(row) + 4;  	/* +4 for 
 		rows outside playing scene */
 	colSize = atoi(col);
+	cout << "rowSize: " << rowSize << " colSize: " << colSize << endl;
 	matrix = new bool*[rowSize];	// memory allocate
 	for (i = 0; i < rowSize; i++)
 		matrix[i] = new bool[colSize];
@@ -266,7 +270,6 @@ void GameMat::init(string lin)
 }
 void splitLine(string lin,char type[], int &Col, bool &End)
 {	
-	cout << "enter function";	// used for debug
 	int i, j, k; // index
 	char col[3];
 			
@@ -274,9 +277,9 @@ void splitLine(string lin,char type[], int &Col, bool &End)
 		End = true;
 		return;
 	}
-	for (i = 0; lin[i] != ' '; i++);	/* i become
-			the positon of first whitespace */
-	for (j = 0; j < i && j < 2; j++) 
+	for (i = 0; lin[i] != ' '; i++); /* i become 
+		the index of the first whitespace */ 
+	for (j = 0; j < i && j < 2; j++)	
 		type[j] = lin[j];
 	type[j] = '\0'; // store the first part into type
 	for (; lin[i] == ' '; i++);	/* i become 
