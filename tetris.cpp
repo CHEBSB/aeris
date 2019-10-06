@@ -13,7 +13,8 @@ public:
 			need to be eliminated */
 	bool ggCheck(); /* check if any tetris cell
 		is outside the playing scnene */
-	void print(ofstream&);
+	void print(ofstream&); /* output the values
+			inside the matrix*/
 private:
 	bool **matrix;
 	int rowSize;
@@ -47,37 +48,33 @@ int main()
 	tetris *Tetr;
 	char tetrT[3];	// for tetris constructor
 	int tetrCol;
-	ofstream finalOP;	// I file	
-	ifstream data;		// O file
+	ofstream finalOP;	// O file	
+	ifstream data;		// I file
 	string line; 	// to store a line read from file
 	int i, j;	// looping index
 	bool EoG = false;	// check if game is over
 	GameMat PlayMat;
 
-	// reading in size from test case
 	data.open("tetris.data.txt", ios::in);
 	if (!data) {
 		cout << "Cannot open tetris.data.txt!\n";
 		return 1;
 	} 
-	getline(data, line);
-	PlayMat.init(line); 
-	// 4 extra rows for tetris outside the game scene
+	getline(data, line); // use the first line in file
+	PlayMat.init(line); 	// to initialize PlayMat
 	// Game start. Read in tetris in sequence
 	while ((!EoG) && (!data.eof())) {
 		getline(data, line);
 		splitLine(line, tetrT, tetrCol, EoG);
-		if (!EoG) {
-			cout << "Type: ";
-			for (i = 0; i < 3; i++) cout << tetrT[i];
-			cout << "  Col: "<< tetrCol << endl;
-		} else cout << "GG!";
-		
-		if (!EoG) {
+		if (!EoG) {	
 			Tetr = new tetris(tetrT, tetrCol);
-			Tetr->Fall(PlayMat);	
+			// create a new tetris
+			Tetr->Fall(PlayMat);
+			// let it fall
 			PlayMat.elimination();
-			EoG = PlayMat.ggCheck();	
+			// check elimination in PlayMat
+			EoG = PlayMat.ggCheck();
+			// check if game is over
 			delete Tetr;				
 		}	
 	}
@@ -184,11 +181,15 @@ void tetris::Fall(GameMat &Mat) {
 	
 	while (flag) {
 		for (i = 0; i < 4; i++) {
-			if (rowTran(i) >= Mat.rowSize || colTran(i) >= Mat.colSize)
+			if (rowTran(i) >= Mat.rowSize ||
+			    colTran(i) >= Mat.colSize)
 				throw 'E';
+			/* if downstair is occupied, 
+			 * or it already hit the ground */
 			if (rowTran(i) + 1 == Mat.rowSize) 
-				flag = false;  // stop falling
-			else if (Mat.matrix[rowTran(i) + 1][colTran(i)] == true)
+				flag = false;  // stop fall
+			else if (Mat.matrix[rowTran(i) + 1]
+				[colTran(i)] == true)
 				flag = false;
 		}	
 		if (flag) cornerRow++;		
@@ -251,15 +252,14 @@ void GameMat::init(string lin)
 	for (i = 0; lin[i] != ' '; i++); /* i become the
 			index of the first whitespace*/  
 	for (j = 0; j < i && j < 2; j++)	
-		row[j] = lin[j];
+		row[j] = lin[j];	// copy 1st number
 	for (; lin[i] == ' '; i++);	/* i become 
 		the first char of the second number*/
-	for (j = 0; lin[i] != '\0' && j < 3; i++) // copy 2nd number 
-		col[j++] = lin[i];
+	for (j = 0; lin[i] != '\0' && j < 3; i++) 
+		col[j++] = lin[i];	// copy 2nd number
 	rowSize = atoi(row) + 4;  	/* +4 for 
 		rows outside playing scene */
 	colSize = atoi(col);
-	cout << "rowSize: " << rowSize << " colSize: " << colSize << endl;
 	matrix = new bool*[rowSize];	// memory allocate
 	for (i = 0; i < rowSize; i++)
 		matrix[i] = new bool[colSize];
