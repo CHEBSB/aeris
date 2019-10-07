@@ -164,7 +164,7 @@ lower-left corner at row 0 and given Col in the gameMat */
 int tetris::rowTran(int index)
 {
 	if (index < 4 && index >= 0)
-		return (cornerRow + (3 - cellRow[index]));
+		return (cornerRow - (3 - cellRow[index]));
 	throw 404;
 }
 int tetris::colTran(int index)
@@ -217,8 +217,9 @@ void GameMat::elimination()
 	bool flag;	// true for need to be eliminated
 	int i, j, k;	// looping index
 
-	for (i = 0; i < rowSize; i++) {	
-	// check each row
+	for (i = 4; i < rowSize; i++) {	
+	/* check each row 
+	 * (except rows outside playing scene) */
 		flag = true;
 		for (j = 0; j < colSize; j++) 
 		// check each element
