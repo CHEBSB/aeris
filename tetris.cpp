@@ -202,7 +202,7 @@ void tetris::Fall(GameMat &Mat) {
 }
 void GameMat::print(ofstream &finalOP)
 {
-	finalOP.open("tetris.final", ios::out);
+	finalOP.open("tetris.output", ios::out);
 	if (!finalOP) {
 		cout << "Cannnot Open tetris.final!";
 		return;
