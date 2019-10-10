@@ -3,6 +3,8 @@
 #include <string.h>
 using namespace std;
 
+class tetris;
+
 class GameMat {
 	friend class tetris;
 public:
