@@ -55,7 +55,7 @@ int main()
 	bool EoG = false;	// check if game is over
 	GameMat PlayMat;
 
-	data.open("tetris.data.txt", ios::in);
+	data.open("tetris.data", ios::in);
 	if (!data) {
 		cout << "Cannot open tetris.data.txt!\n";
 		return 1;
@@ -200,7 +200,7 @@ void tetris::Fall(GameMat &Mat) {
 }
 void GameMat::print(ofstream &finalOP)
 {
-	finalOP.open("tetris.final.txt", ios::out);
+	finalOP.open("tetris.final", ios::out);
 	if (!finalOP) {
 		cout << "Cannnot Open tetris.final!";
 		return;
