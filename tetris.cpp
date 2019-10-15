@@ -57,9 +57,9 @@ int main()
 	bool EoG = false;	// check if game is over
 	GameMat PlayMat;
 
-	data.open("tetris.data", ios::in);
+	data.open("Tetris.data", ios::in);
 	if (!data) {
-		cout << "Cannot open tetris.data.txt!\n";
+		cout << "Cannot open Tetris.data!\n";
 		return 1;
 	} 
 	getline(data, line); // use the first line in file
@@ -202,9 +202,9 @@ void tetris::Fall(GameMat &Mat) {
 }
 void GameMat::print(ofstream &finalOP)
 {
-	finalOP.open("tetris.output", ios::out);
+	finalOP.open("Tetris.final", ios::out);
 	if (!finalOP) {
-		cout << "Cannnot Open tetris.final!";
+		cout << "Cannnot Open Tetris.final!";
 		return;
 	}
 	for (int i = 4; i < rowSize; i++) {
