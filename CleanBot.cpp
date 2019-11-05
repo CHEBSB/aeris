@@ -2,6 +2,17 @@
 #include <iostream>
 using namespace std;
 
+class stack {
+public:
+	void push(const int);
+	void pop();
+	int top();
+private:
+	int* Arr;
+	int size;
+	int capa;
+}
+
 class robot;
 class cell {
 	friend class robot;
@@ -197,15 +208,19 @@ void robot::Traverse()
 				if (map[rowPos][colPos].wayHome[0]) {
 					// go up
 					rowPos++;
+					Traverse();
 				} else if (map[rowPos][colPos].wayHome[1]) {
 					// go down
 					rowPos--;
+					Traverse();
 				} else if (map[rowPos][colPos].wayHome[2]) {
 					// go left
 					colPos--;
+					Traverse();
 				} else if (map[rowPos][colPos].wayHome[3]) {
 					// go right
 					colPos++;
+					Traverse();
 				} else throw 404;
 			}
 		}
@@ -245,31 +260,138 @@ void robot::Traverse()
 		switch (bestOption) {
 		case 0: 
 		// go up
+			rowPos--;
+			Traverse();
 			break;
 		case 1: 
 		// go down
+			rowPos++;
+			Traverse();
 			break;
 		case 2: 
 		// go left
+			colPos--;
+			Traverse();
 			break;
 		case 3: 
 		// go right
+			colPos++;
+			Traverse();
 			break;
 		default: 
 			switch (secChoice) {
 				case 0:
 					// go up
+					rowPos--;
+					Traverse();
 					break;
 				case 1:
 					// go down
+					rowPos++;
+					Traverse();
 					break;
 				case 2:
 					// go left
+					colPos--;
+					Traverse();
 					break;
 				case 3:
 					// go right
-					break;			
+					colPos++; 
+					Traverse();		
 			}
+		}
+	}
+}
+
+void robot::PointWiseTraverse(int r, int c)
+{
+	stack S;
+	cell cur;
+	int Blife = bLife;
+	WAYHOME = 0;
+
+	for (; r != Rrow || c != Rcol; Blife--) {
+		cur = map[r][c];
+		if ((!WAYHOME) && cur.distan == Blife) {
+			WAYHOME = 1;
+		}
+
+		if (WAYHOME) {
+			int bestOption = -1, secChoice = -1;
+              		// up
+               		if (cur.wayHome[0]) {
+               	         	if (!map[r - 1][c].done)
+                                	bestOption = 0;
+                      	 	 else secChoice = 0;
+               		 }
+              		// down
+                	if (cur.wayHome[1] && bestOption == -1) {
+                        	if (!map[r + 1][c].done)
+                                	bestOption = 1;
+                        	else if (secChoice == -1)
+                                	secChoice = 1;
+                	}
+                	// left
+              	  	if (cur.wayHome[2] && bestOption == -1) {
+                        	if (!map[r][c].done)
+                                	bestOption = 2;
+                        	else if (secChoice == -1)
+                                	secChoice = 2;
+                	}
+                	// right
+                	if (cur.wayHome[3] && bestOption == -1) {
+                        	if (!map[r][c].done)
+                                	bestOption = 3;
+                        	else if (secChoice == -1)
+                                	secChoice = 3;
+                	}
+			switch (bestOption) {
+                	case 0:
+                	// go up
+                        	r--;
+                        	S.push(1);
+                        	break;
+                	case 1:
+                	// go down
+                        	r++;
+                        	S.push(0);
+                        	break;
+                	case 2:
+               		// go left
+                        	c--;
+                        	S.push(3);
+                        	break;
+                	case 3:
+                	// go right
+                        	c++;
+                        	S.push(2);
+                        	break;
+                	default:
+                        	switch (secChoice) {
+                                case 0:
+                                        // go up
+                                        r--;
+                                        S.push(1);
+                                        break;
+                                case 1:
+                                        // go down
+                                        r++;
+                                        S.push(0);
+                                        break;
+                                case 2:
+                                        // go left
+                                        c--;
+                                        S.push(3);
+                                        break;
+                                case 3:
+                                        // go right
+                                        c++;
+                                        S.push(2);
+                       		 }
+			}	
+		} else {
+			
 		}
 	}
 }
