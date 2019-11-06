@@ -1,6 +1,11 @@
 #include <fstream>
 #include <iostream>
 #include <stdlib.h>
+#define Cur 	map[rowPos][colPos]
+#define Up 	map[rowPos-1][colPos]
+#define Down	map[rowPos+1][colPos]
+#define Left 	map[rowPos][colPos-1]
+#define Right 	map[rowPos][colPos+1]
 using namespace std;
 
 class stack {
@@ -27,7 +32,7 @@ private:
 	bool done;	// has it been clean?
 	int distan;	// minimum distance(step) to R
 	bool* wayHome;	/* if Bot want to go back to R 
-	with shortest path, whichdirection may it take? 
+	with shortest path, which direction may it take? 
 	0, 1, 2, 3 for up, down, left, right */
 	bool pseudTraver;
 	// to be Added...
@@ -109,8 +114,8 @@ robot::robot() {
 void robot::afterMove()
 {
 	bCurrent--;		// consume energy
-	if (map[rowPos][colPos].done == 0)	
-		map[rowPos][colPos].done = 1;	// clean this part
+	if (Cur.done == 0)	
+		Cur.done = 1;	// clean this part
 	if (rowPos == Rrow && colPos == Rcol) {
 		WAYHOME = 0;
 		bCurrent = bLife;	// recharge
@@ -122,8 +127,8 @@ void robot::findDistan(const int r, const int c)
 	cell& cur = map[r][c];	// current position
 	if (cur.distan > bLife) throw ("illegal floor!");
 	cur.pseudTraver = 1;
-	// check upward
-	if (r - 1 >= 0) {
+	
+	if (r - 1 >= 0) {	// check up
 		cell& up = map[r - 1][c];
 		if (up.distan > (cur.distan + 1)) {
 			up.distan = cur.distan + 1;		// rewrite distan
@@ -136,8 +141,7 @@ void robot::findDistan(const int r, const int c)
 			up.wayHome[0] = true;	// add option into wayBackHome
 		}
 	}
-	// check downward
-	if (r + 1 < RowSize) {
+	if (r + 1 < RowSize) {	// check down
 		cell& down = map[r + 1][c];
 		if (down.distan > (cur.distan + 1)) {
 			down.distan = cur.distan + 1;		// rewrite distan
@@ -150,8 +154,7 @@ void robot::findDistan(const int r, const int c)
 			down.wayHome[1] = true;	// add option into wayBackHome
 		}
 	}
-	// check leftward
-	if (c - 1 >= 0) {
+	if (c - 1 >= 0) {	// check left
 		cell& left = map[r][c - 1];
 		if (left.distan > (cur.distan + 1)) {
 			left.distan = cur.distan + 1;		// rewrite distan
@@ -164,8 +167,7 @@ void robot::findDistan(const int r, const int c)
 			left.wayHome[2] = true;	// add option into wayBackHome
 		}
 	}	
-	// check rightward
-	if (c + 1 < ColSize) {
+	if (c + 1 < ColSize) {	// check right
 		cell& right = map[r][c + 1];
 		if (right.distan > (cur.distan + 1)) {
 			right.distan = cur.distan + 1;		// rewrite distan
@@ -174,7 +176,7 @@ void robot::findDistan(const int r, const int c)
 			right.wayHome[3] = true;		// rewrite wayBackHome
 			if (!right.pseudTraver) // unvisited
 				findDistan(r, c + 1);
-		} else if (right.distan == (cur.distan + 1)) {
+		} else if (right.distan == (cur.distan + 1)) { 
 			right.wayHome[3] = true;	// add option into wayBackHome
 		}
 	}
@@ -193,45 +195,37 @@ void robot::Traverse()
 {
 	afterMove();
 	if (!WAYHOME) { // still going deeper
-		// up
-		if (!map[rowPos - 1][colPos].done) {
-			rowPos--;
+		if (!Up.done) {
+			rowPos--;	// go up
 			Traverse();
 		}
-		// down
-		else if (!map[rowPos + 1][colPos].done) {
-			rowPos++;
+		else if (!Down.done) {
+			rowPos++;	// go down
 			Traverse();
 		}
-		// left
-		else if (!map[rowPos][colPos - 1].done) {
-			colPos--;
+		else if (!Left.done) {
+			colPos--;	// go left
 			Traverse();
 		}
-		// right
-		else if (!map[rowPos][colPos + 1].done) {
-			colPos++;
+		else if (!Right.done) {
+			colPos++;	// go right
 			Traverse();
 		}
 		else {
-			if (rowPos == Rrow && colPos == Rcol) {
+			if (rowPos == Rrow && colPos == Rcol) 
 				return;
-			} else {
-				if (map[rowPos][colPos].wayHome[0]) {
-					// go up
-					rowPos++;
+			else {
+				if (Cur.wayHome[0]) {
+					rowPos--; // up
 					Traverse();
-				} else if (map[rowPos][colPos].wayHome[1]) {
-					// go down
-					rowPos--;
+				} else if (Cur.wayHome[1]) {
+					rowPos++; // down
 					Traverse();
-				} else if (map[rowPos][colPos].wayHome[2]) {
-					// go left
-					colPos--;
+				} else if (Cur.wayHome[2]) {
+					colPos--; // left
 					Traverse();
-				} else if (map[rowPos][colPos].wayHome[3]) {
-					// go right
-					colPos++;
+				} else if (Cur.wayHome[3]) {
+					colPos++; // right
 					Traverse();
 				} else throw 404;
 			}
@@ -241,74 +235,62 @@ void robot::Traverse()
 		int bestOption = -1, secChoice = -1;
 
 		// up
-		if (map[rowPos][colPos].wayHome[0]) {
-			if (!map[rowPos - 1][colPos].done) 
-				bestOption = 0;
+		if (Cur.wayHome[0]) {
+			if (!Up.done) bestOption = 0;
 			else secChoice = 0;
 		}
 		// down
-		if (map[rowPos][colPos].wayHome[1] && bestOption == -1) {
-			if (!map[rowPos + 1][colPos].done)
-				bestOption = 1;
+		if (Cur.wayHome[1] && bestOption == -1) {
+			if (!Down.done)	bestOption = 1;
 			else if (secChoice == -1)
 				secChoice = 1;
 		} 
 		// left
-		if (map[rowPos][colPos].wayHome[2] && bestOption == -1) {
-			if (!map[rowPos][colPos - 1].done)
-				bestOption = 2;
+		if (Cur.wayHome[2] && bestOption == -1) {
+			if (!Left.done)	bestOption = 2;
 			else if (secChoice == -1)
 				secChoice = 2;
 		}
 		// right
-		if (map[rowPos][colPos].wayHome[3] && bestOption == -1) {
-			if (!map[rowPos][colPos + 1].done)
-				bestOption = 3;
+		if (Cur.wayHome[3] && bestOption == -1) {
+			if (!Right.done) bestOption = 3;
 			else if (secChoice == -1)
 				secChoice = 3;
 		}
 		
 		
 		switch (bestOption) {
-		case 0: 
-		// go up
+		case 0: // go up
 			rowPos--;
 			Traverse();
 			break;
-		case 1: 
-		// go down
+		case 1: // go down
 			rowPos++;
 			Traverse();
 			break;
-		case 2: 
-		// go left
+		case 2: // go left
 			colPos--;
 			Traverse();
 			break;
-		case 3: 
-		// go right
+		case 3: // go right
 			colPos++;
 			Traverse();
 			break;
 		default: 
 			switch (secChoice) {
-				case 0:
-					// go up
+				case 0:	// go up
 					rowPos--;
 					Traverse();
 					break;
-				case 1:
-					// go down
+				case 1:	// go down
 					rowPos++;
 					Traverse();
 					break;
-				case 2:
-					// go left
+				case 2:	// go left
 					colPos--;
 					Traverse();
 					break;
-				case 3:
-					// go right
+				case 3:	// go right
 					colPos++; 
 					Traverse();		
 			}
@@ -319,91 +301,6 @@ void robot::Traverse()
 void robot::PointWiseTraverse(int r, int c)
 {
 	stack S;
-	cell cur;
-	int Blife = bLife;
-	WAYHOME = 0;
 
-	for (; r != Rrow || c != Rcol; Blife--) {
-		cur = map[r][c];
-		if ((!WAYHOME) && cur.distan == Blife) {
-			WAYHOME = 1;
-		}
-
-		if (WAYHOME) {
-			int bestOption = -1, secChoice = -1;
-              		// up
-               		if (cur.wayHome[0]) {
-               	         	if (!map[r - 1][c].done)
-                                	bestOption = 0;
-                      	 	 else secChoice = 0;
-               		 }
-              		// down
-                	if (cur.wayHome[1] && bestOption == -1) {
-                        	if (!map[r + 1][c].done)
-                                	bestOption = 1;
-                        	else if (secChoice == -1)
-                                	secChoice = 1;
-                	}
-                	// left
-              	  	if (cur.wayHome[2] && bestOption == -1) {
-                        	if (!map[r][c].done)
-                                	bestOption = 2;
-                        	else if (secChoice == -1)
-                                	secChoice = 2;
-                	}
-                	// right
-                	if (cur.wayHome[3] && bestOption == -1) {
-                        	if (!map[r][c].done)
-                                	bestOption = 3;
-                        	else if (secChoice == -1)
-                                	secChoice = 3;
-                	}
-			switch (bestOption) {
-                	case 0:
-                	// go up
-                        	r--;
-                        	S.push(1);
-                        	break;
-                	case 1:
-                	// go down
-                        	r++;
-                        	S.push(0);
-                        	break;
-                	case 2:
-               		// go left
-                        	c--;
-                        	S.push(3);
-                        	break;
-                	case 3:
-                	// go right
-                        	c++;
-                        	S.push(2);
-                        	break;
-                	default:
-                        	switch (secChoice) {
-                                case 0:
-                                        // go up
-                                        r--;
-                                        S.push(1);
-                                        break;
-                                case 1:
-                                        // go down
-                                        r++;
-                                        S.push(0);
-                                        break;
-                                case 2:
-                                        // go left
-                                        c--;
-                                        S.push(3);
-                                        break;
-                                case 3:
-                                        // go right
-                                        c++;
-                                        S.push(2);
-                       		 }
-			}	
-		} else {
-			
-		}
-	}
+	      		
 }
