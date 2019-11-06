@@ -1,11 +1,6 @@
 #include <fstream>
 #include <iostream>
 #include <stdlib.h>
-#define Cur 	map[rowPos][colPos]
-#define Up 	map[rowPos-1][colPos]
-#define Down	map[rowPos+1][colPos]
-#define Left 	map[rowPos][colPos-1]
-#define Right 	map[rowPos][colPos+1]
 using namespace std;
 
 class stack {
@@ -26,7 +21,7 @@ class cell {
 	friend class robot;
 public:
 	cell(bool don, int dist) : done(don), 
-	distan(dist), pseudTraver(0) {}
+	distan(dist) {}
 	cell() {} // default constructor
 private:
 	bool done;	// has it been clean?
@@ -34,15 +29,13 @@ private:
 	bool* wayHome;	/* if Bot want to go back to R 
 	with shortest path, which direction may it take? 
 	0, 1, 2, 3 for up, down, left, right */
-	bool pseudTraver;
 	// to be Added...
 }; 
 
 class robot {
 public:
 	robot();
-	void findDistan() { findDistan(Rrow, Rcol); } /* before 
-	Bot start traverse the floor, gather information of floor */
+	void Dijkstra();
 	void Traversal();	// actual Traversal of the floor
 private:
 	cell** map;		// the informataion of area to traverse
@@ -53,8 +46,17 @@ private:
 	int rowPos, colPos;	// current position of bot
 	int RowSize, ColSize;	// array size
 	int Rrow, Rcol;		// position of R
+	cell* Cur(int, int);
+	cell* Cur() { return Cur(rowPos, colPos); }
+	cell* Up(int, int);
+	cell* Up() { return Up(rowPos, colPos); }
+	cell* Down(int, int);
+	cell* Down() { return Down(rowPos, colPos); }
+	cell* Left(int, int);
+	cell* Left() { return Left(rowPos, colPos); }
+	cell* Right(int, int);
+	cell* Right() { return Right(rowPos, colPos); }
 	void afterMove();	// after robot move a step, call this function
-	void findDistan(const int, const int);	// work horse
 	void Traverse();		// first step of traversal
 	void PointWiseTraverse(int, int);	/* find the
 	optimized way to clean a particular point */
@@ -65,7 +67,7 @@ int main()
 	ofstream output;		
 	robot Bot;
 
-	Bot.findDistan();
+	Bot.Dijkstra();
 	Bot.Traversal();
 
 	return 0;
@@ -111,74 +113,83 @@ robot::robot() {
 		}
 	data.close();
 }
+
+cell* robot::Cur(int r, int c) {
+	return &(map[r][c]);
+}
+cell* robot::Up(int r, int c) {
+	if (r - 1 >= 0) return &(map[r - 1][c]);
+	return NULL;
+}
+cell* robot::Down(int r, int c) {
+	if (r + 1 < RowSize) return &(map[r + 1][c]);
+	return NULL;
+}
+cell* robot::Left(int r, int c) {
+	if (c - 1 >= 0) return &(map[r][c - 1]);
+	return NULL;
+}
+cell* robot::Right(int r, int c) {
+	if (c + 1 < ColSize) return &(map[r][c + 1]);
+	return NULL;
+}
+
+void robot::Dijkstra()
+{
+	bool s[RowSize][ColSize];
+
+	for (int i = 0; i < RowSize; i++)
+		for (int j = 0; j < ColSize; j++) 
+			s[i][j] = false;
+	if (Up(Rrow, Rcol))
+		if (!Up(Rrow, Rcol)->done)
+			Up(Rrow, Rcol)->distan = 1;
+	if (Down(Rrow, Rcol))
+		if (!Down(Rrow, Rcol)->done)
+			Down(Rrow, Rcol)->distan = 1;
+	if (Left(Rrow, Rcol))
+		if (!Left(Rrow, Rcol)->done)
+			Left(Rrow, Rcol)->distan = 1;
+	if (Right(Rrow, Rcol))
+		if (!Right(Rrow, Rcol)->done)
+			Right(Rrow, Rcol)->distan = 1;
+	s[Rrow][Rcol] = true;
+
+	for (int i = 0; i < RowSize; i++)
+		for (int j = 0; j < ColSize; j++) {
+			if (!map[i][j].done) {	
+				int ur, uc, D = 100000;
+				// choose(ur, uc)
+				for (int m = 0; m < RowSize; m++)
+					for (int n = 0; n < ColSize; n++) 
+						if (!map[m][n].done && !s[m][m])
+							if (map[m][n].distan < D) {
+								ur = m; uc = n; 
+								D = map[m][n].distan;
+							}
+				s[ur][uc] = true;
+
+				for (int w = 0; w < RowSize; w++)
+					for (int x = 0; x < ColSize; x++) 
+						if ((!map[w][x].done) && (!s[w][x])
+						&& ((w == ur - 1 && x == uc) 
+						|| (w == ur + 1 && x == uc)
+						|| (w == ur && x == uc - 1) 
+						|| (w == ur && x == uc + 1)))
+							map[w][x].distan = map[ur][uc].distan + 1;
+			}
+			
+		}
+}	
+
 void robot::afterMove()
 {
 	bCurrent--;		// consume energy
-	if (Cur.done == 0)	
-		Cur.done = 1;	// clean this part
+	if (Cur()->done == 0)	
+		Cur()->done = 1;	// clean this part
 	if (rowPos == Rrow && colPos == Rcol) {
 		WAYHOME = 0;
 		bCurrent = bLife;	// recharge
-	}
-}
-
-void robot::findDistan(const int r, const int c)
-{	// starting at position given by row and col
-	cell& cur = map[r][c];	// current position
-	if (cur.distan > bLife) throw ("illegal floor!");
-	cur.pseudTraver = 1;
-	
-	if (r - 1 >= 0) {	// check up
-		cell& up = map[r - 1][c];
-		if (up.distan > (cur.distan + 1)) {
-			up.distan = cur.distan + 1;		// rewrite distan
-			for (int i = 0; i < 4; i++) 
-				up.wayHome[i] = false;	// reset wayBckHome
-			up.wayHome[0] = true;		// rewrite wayBackHome
-			if (!up.pseudTraver)	// unvisited
-				findDistan(r - 1, c);
-		} else if (up.distan == (cur.distan + 1)) {
-			up.wayHome[0] = true;	// add option into wayBackHome
-		}
-	}
-	if (r + 1 < RowSize) {	// check down
-		cell& down = map[r + 1][c];
-		if (down.distan > (cur.distan + 1)) {
-			down.distan = cur.distan + 1;		// rewrite distan
-			for (int i = 0; i < 4; i++)
-				down.wayHome[i] = false;	// reset wayBckHome
-			down.wayHome[1] = true;		// rewrite wayBackHome
-			if (!down.pseudTraver)	// unvisited
-				findDistan(r + 1, c);
-		} else if (down.distan == (cur.distan + 1)) {
-			down.wayHome[1] = true;	// add option into wayBackHome
-		}
-	}
-	if (c - 1 >= 0) {	// check left
-		cell& left = map[r][c - 1];
-		if (left.distan > (cur.distan + 1)) {
-			left.distan = cur.distan + 1;		// rewrite distan
-			for (int i = 0; i < 4; i++)
-				left.wayHome[i] = false;	// reset wayBckHome
-			left.wayHome[2] = true;		// rewrite wayBackHome
-			if (!left.pseudTraver)	// unvisited
-				findDistan(r, c - 1);
-		} else if (left.distan == (cur.distan + 1)) {
-			left.wayHome[2] = true;	// add option into wayBackHome
-		}
-	}	
-	if (c + 1 < ColSize) {	// check right
-		cell& right = map[r][c + 1];
-		if (right.distan > (cur.distan + 1)) {
-			right.distan = cur.distan + 1;		// rewrite distan
-			for (int i = 0; i < 4; i++)
-				right.wayHome[i] = false;	// reset wayBckHome
-			right.wayHome[3] = true;		// rewrite wayBackHome
-			if (!right.pseudTraver) // unvisited
-				findDistan(r, c + 1);
-		} else if (right.distan == (cur.distan + 1)) { 
-			right.wayHome[3] = true;	// add option into wayBackHome
-		}
 	}
 }
 
@@ -195,19 +206,19 @@ void robot::Traverse()
 {
 	afterMove();
 	if (!WAYHOME) { // still going deeper
-		if (!Up.done) {
+		if (!Up()->done) {
 			rowPos--;	// go up
 			Traverse();
 		}
-		else if (!Down.done) {
+		else if (!Down()->done) {
 			rowPos++;	// go down
 			Traverse();
 		}
-		else if (!Left.done) {
+		else if (!Left()->done) {
 			colPos--;	// go left
 			Traverse();
 		}
-		else if (!Right.done) {
+		else if (!Right()->done) {
 			colPos++;	// go right
 			Traverse();
 		}
@@ -215,16 +226,16 @@ void robot::Traverse()
 			if (rowPos == Rrow && colPos == Rcol) 
 				return;
 			else {
-				if (Cur.wayHome[0]) {
+				if (Cur()->wayHome[0]) {
 					rowPos--; // up
 					Traverse();
-				} else if (Cur.wayHome[1]) {
+				} else if (Cur()->wayHome[1]) {
 					rowPos++; // down
 					Traverse();
-				} else if (Cur.wayHome[2]) {
+				} else if (Cur()->wayHome[2]) {
 					colPos--; // left
 					Traverse();
-				} else if (Cur.wayHome[3]) {
+				} else if (Cur()->wayHome[3]) {
 					colPos++; // right
 					Traverse();
 				} else throw 404;
@@ -235,25 +246,25 @@ void robot::Traverse()
 		int bestOption = -1, secChoice = -1;
 
 		// up
-		if (Cur.wayHome[0]) {
-			if (!Up.done) bestOption = 0;
+		if (Cur()->wayHome[0]) {
+			if (!Up()->done) bestOption = 0;
 			else secChoice = 0;
 		}
 		// down
-		if (Cur.wayHome[1] && bestOption == -1) {
-			if (!Down.done)	bestOption = 1;
+		if (Cur()->wayHome[1] && bestOption == -1) {
+			if (!Down()->done)	bestOption = 1;
 			else if (secChoice == -1)
 				secChoice = 1;
 		} 
 		// left
-		if (Cur.wayHome[2] && bestOption == -1) {
-			if (!Left.done)	bestOption = 2;
+		if (Cur()->wayHome[2] && bestOption == -1) {
+			if (!Left()->done)	bestOption = 2;
 			else if (secChoice == -1)
 				secChoice = 2;
 		}
 		// right
-		if (Cur.wayHome[3] && bestOption == -1) {
-			if (!Right.done) bestOption = 3;
+		if (Cur()->wayHome[3] && bestOption == -1) {
+			if (!Right()->done) bestOption = 3;
 			else if (secChoice == -1)
 				secChoice = 3;
 		}
