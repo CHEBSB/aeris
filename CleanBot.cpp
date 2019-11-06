@@ -1,24 +1,27 @@
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>
 using namespace std;
 
 class stack {
 public:
 	void push(const int);
-	void pop();
-	int top();
+	void pop() { ~Arr[--size];  }
+	int top() { return Arr[size - 1]; }
+	bool Empty() { return size ? 0 : 1; }
+	stack() : size(0), capa(10) { Arr = new int[10]; }
 private:
 	int* Arr;
 	int size;
 	int capa;
-}
+};
 
 class robot;
 class cell {
 	friend class robot;
 public:
 	cell(bool don, int dist) : done(don), 
-	distan(dist), pseudoTraversed(0) {}
+	distan(dist), pseudTraver(0) {}
 	cell() {} // default constructor
 private:
 	bool done;	// has it been clean?
@@ -26,14 +29,14 @@ private:
 	bool* wayHome;	/* if Bot want to go back to R 
 	with shortest path, whichdirection may it take? 
 	0, 1, 2, 3 for up, down, left, right */
-	bool pseudoTraversed;
+	bool pseudTraver;
 	// to be Added...
 }; 
 
 class robot {
 public:
 	robot();
-	void pseudoTraverse() { pseudoTraverse(Rrow, Rcol); } /* before 
+	void findDistan() { findDistan(Rrow, Rcol); } /* before 
 	Bot start traverse the floor, gather information of floor */
 	void Traversal();	// actual Traversal of the floor
 private:
@@ -46,7 +49,7 @@ private:
 	int RowSize, ColSize;	// array size
 	int Rrow, Rcol;		// position of R
 	void afterMove();	// after robot move a step, call this function
-	void pseudoTraverse(const int, const int);	// work horse
+	void findDistan(const int, const int);	// work horse
 	void Traverse();		// first step of traversal
 	void PointWiseTraverse(int, int);	/* find the
 	optimized way to clean a particular point */
@@ -57,10 +60,19 @@ int main()
 	ofstream output;		
 	robot Bot;
 
-	Bot.pseudoTraverse();
+	Bot.findDistan();
 	Bot.Traversal();
 
 	return 0;
+}
+
+void stack::push(const int val)
+{
+	if (size == capa) {
+		Arr = (int*)realloc(Arr, sizeof(int) * 2 * capa);
+		capa = capa * 2;
+	}
+	Arr[size++] = val;
 }
 
 robot::robot() {
@@ -105,11 +117,11 @@ void robot::afterMove()
 	}
 }
 
-void robot::pseudoTraverse(const int r, const int c)
+void robot::findDistan(const int r, const int c)
 {	// starting at position given by row and col
 	cell& cur = map[r][c];	// current position
 	if (cur.distan > bLife) throw ("illegal floor!");
-	cur.pseudoTraversed = 1;
+	cur.pseudTraver = 1;
 	// check upward
 	if (r - 1 >= 0) {
 		cell& up = map[r - 1][c];
@@ -118,8 +130,8 @@ void robot::pseudoTraverse(const int r, const int c)
 			for (int i = 0; i < 4; i++) 
 				up.wayHome[i] = false;	// reset wayBckHome
 			up.wayHome[0] = true;		// rewrite wayBackHome
-			if (!up.pseudoTraversed)	// unvisited
-				pseudoTraverse(r - 1, c);
+			if (!up.pseudTraver)	// unvisited
+				findDistan(r - 1, c);
 		} else if (up.distan == (cur.distan + 1)) {
 			up.wayHome[0] = true;	// add option into wayBackHome
 		}
@@ -132,8 +144,8 @@ void robot::pseudoTraverse(const int r, const int c)
 			for (int i = 0; i < 4; i++)
 				down.wayHome[i] = false;	// reset wayBckHome
 			down.wayHome[1] = true;		// rewrite wayBackHome
-			if (!down.pseudoTraversed)	// unvisited
-				pseudoTraverse(r + 1, c);
+			if (!down.pseudTraver)	// unvisited
+				findDistan(r + 1, c);
 		} else if (down.distan == (cur.distan + 1)) {
 			down.wayHome[1] = true;	// add option into wayBackHome
 		}
@@ -146,8 +158,8 @@ void robot::pseudoTraverse(const int r, const int c)
 			for (int i = 0; i < 4; i++)
 				left.wayHome[i] = false;	// reset wayBckHome
 			left.wayHome[2] = true;		// rewrite wayBackHome
-			if (!left.pseudoTraversed)	// unvisited
-				pseudoTraverse(r, c - 1);
+			if (!left.pseudTraver)	// unvisited
+				findDistan(r, c - 1);
 		} else if (left.distan == (cur.distan + 1)) {
 			left.wayHome[2] = true;	// add option into wayBackHome
 		}
@@ -160,8 +172,8 @@ void robot::pseudoTraverse(const int r, const int c)
 			for (int i = 0; i < 4; i++)
 				right.wayHome[i] = false;	// reset wayBckHome
 			right.wayHome[3] = true;		// rewrite wayBackHome
-			if (!right.pseudoTraversed) // unvisited
-				pseudoTraverse(r, c + 1);
+			if (!right.pseudTraver) // unvisited
+				findDistan(r, c + 1);
 		} else if (right.distan == (cur.distan + 1)) {
 			right.wayHome[3] = true;	// add option into wayBackHome
 		}
