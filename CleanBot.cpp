@@ -193,6 +193,9 @@ void robot::afterMove()
 	bCurrent--;		// consume energy
 	if (Cur()->done == 0)	
 		Cur()->done = 1;	// clean this part
+	if (bCurrent <= Cur()->distan + 1)	/* enrgy left
+	is not enough for going deeper	*/
+		WAYHOME = 1;
 	if (rowPos == Rrow && colPos == Rcol) {
 		WAYHOME = 0;
 		bCurrent = bLife;	// recharge
@@ -331,6 +334,41 @@ void robot::PointWiseTraverse(int r, int c)
 			colPos++;
 		}
 	}
-	// Now the bot should be at the initial given position 
-
+	/* Now the bot should be at the initially given position,
+	with bCurrent = bLife - distan of that point */
+	for (; rowPos != Rrow || colPos != Rcol; afterMove()) {
+		if (WAYHOME) {	// time to go home
+			switch (FindWayBack(rowPos, colPos)) {
+			case 0:	rowPos--;
+				break;
+			case 1:	rowPos++;
+				break;
+			case 2:	colPos--;
+				break;
+			case 3:	colPos++;
+			}
+		}
+		else {	// keep working
+			if (!Up()->done)
+				rowPos--;	// go up	
+			else if (!Down()->done)
+				rowPos++;	// go down
+			else if (!Left()->done)
+				colPos--;	// go left	
+			else if (!Right()->done)
+				colPos++;	// go right
+			else {
+				
+				if (Cur()->wayHome[0])
+					rowPos--; // go up
+				else if (Cur()->wayHome[1])
+					rowPos++; // go down
+				else if (Cur()->wayHome[2])
+					colPos--; // go left
+				else if (Cur()->wayHome[3])
+					colPos++; // go right
+				else throw 404;				
+			}
+		}
+	}
 }
