@@ -148,17 +148,25 @@ void robot::Dijkstra()
 		for (int j = 0; j < ColSize; j++) 
 			s[i][j] = false;
 	if (Up(Rrow, Rcol))
-		if (!Up(Rrow, Rcol)->done)
+		if (!Up(Rrow, Rcol)->done) {
 			Up(Rrow, Rcol)->distan = 1;
+			Up(Rrow, Rcol)->wayHome[1] = true;
+		}
 	if (Down(Rrow, Rcol))
-		if (!Down(Rrow, Rcol)->done)
+		if (!Down(Rrow, Rcol)->done) {
 			Down(Rrow, Rcol)->distan = 1;
+			Down(Rrow, Rcol)->wayHome[0] = true;
+		}
 	if (Left(Rrow, Rcol))
-		if (!Left(Rrow, Rcol)->done)
+		if (!Left(Rrow, Rcol)->done) {
 			Left(Rrow, Rcol)->distan = 1;
+			Left(Rrow, Rcol)->wayHome[3] = true;
+		}
 	if (Right(Rrow, Rcol))
-		if (!Right(Rrow, Rcol)->done)
+		if (!Right(Rrow, Rcol)->done) {
 			Right(Rrow, Rcol)->distan = 1;
+			Left(Rrow, Rcol)->wayHome[2] = true;
+		}
 	s[Rrow][Rcol] = true;
 
 	for (int i = 0; i < RowSize; i++)
@@ -175,16 +183,55 @@ void robot::Dijkstra()
 							}
 				s[ur][uc] = true;
 
-				for (int w = 0; w < RowSize; w++)
-					for (int x = 0; x < ColSize; x++) 
-						if ((!map[w][x].done) && (!s[w][x])
-						&& ((w == ur - 1 && x == uc) 
-						|| (w == ur + 1 && x == uc)
-						|| (w == ur && x == uc - 1) 
-						|| (w == ur && x == uc + 1)))
-							map[w][x].distan = map[ur][uc].distan + 1;
-			}
-			
+				// w = ur - 1; x = uc;
+				if (ur - 1 >= 0) {
+					if ((!map[ur - 1][uc].done) && (!s[ur - 1][uc])) {
+						if (map[ur][uc].distan + 1 < map[ur - 1][uc].distan) {
+							map[ur - 1][uc].distan = map[ur][uc].distan + 1;
+							for (int i = 0; i < 4; i++) map[ur - 1][uc].wayHome[i] = false;
+							map[ur - 1][uc].wayHome[1] = true;
+						}
+						else if (map[ur][uc].distan + 1 == map[ur - 1][uc].distan)
+							map[ur - 1][uc].wayHome[1] = true;
+					}
+				}
+				// w = ur + 1; x = uc;
+				if (ur + 1 < RowSize) {
+					if ((!map[ur + 1][uc].done) && (!s[ur + 1][uc])) {
+						if (map[ur][uc].distan + 1 < map[ur + 1][uc].distan) {
+							map[ur + 1][uc].distan = map[ur][uc].distan + 1;
+							for (int i = 0; i < 4; i++) map[ur + 1][uc].wayHome[i] = false;
+							map[ur + 1][uc].wayHome[0] = true;
+						}
+						else if (map[ur][uc].distan + 1 == map[ur + 1][uc].distan)
+							map[ur + 1][uc].wayHome[0] = true;
+					}
+				}
+				// w = ur; x = uc - 1;
+				if (uc - 1 >= 0) {
+					if ((!map[ur][uc - 1].done) && (!s[ur][uc - 1])) {
+						if (map[ur][uc].distan + 1 < map[ur][uc - 1].distan) {
+							map[ur][uc - 1].distan = map[ur][uc].distan + 1;
+							for (int i = 0; i < 4; i++) map[ur][uc - 1].wayHome[i] = false;
+							map[ur][uc - 1].wayHome[3] = true;
+						}
+						else if (map[ur][uc].distan + 1 == map[ur][uc - 1].distan)
+							map[ur][uc - 1].wayHome[3] = true;
+					}
+				}
+				// w = ur; x = uc + 1
+				if (uc + 1 < ColSize) {
+					if ((!map[ur][uc + 1].done) && (!s[ur][uc + 1])) {
+						if (map[ur][uc].distan + 1 < map[ur][uc + 1].distan) {
+							map[ur][uc + 1].distan = map[ur][uc].distan + 1;
+							for (int i = 0; i < 4; i++) map[ur][uc + 1].wayHome[i] = false;
+							map[ur][uc + 1].wayHome[2] = true;
+						}
+						else if (map[ur][uc].distan + 1 == map[ur][uc + 1].distan)
+							map[ur][uc + 1].wayHome[2] = true;
+					}
+				}
+			}		
 		}
 }	
 
@@ -321,17 +368,13 @@ void robot::PointWiseTraverse(int r, int c)
 	// at this moment, Bot should be at R
 	for (; !S.Empty(); afterMove(), S.pop()) {
 		switch (S.top()) {
-		case 0:
-			rowPos--;
+		case 0:	rowPos--;
 			break;
-		case 1:
-			rowPos++;
+		case 1:	rowPos++;
 			break;
-		case 2:
-			colPos--;
+		case 2:	colPos--;
 			break;
-		case 3:
-			colPos++;
+		case 3:	colPos++;
 		}
 	}
 	/* Now the bot should be at the initially given position,
@@ -358,7 +401,6 @@ void robot::PointWiseTraverse(int r, int c)
 			else if (!Right()->done)
 				colPos++;	// go right
 			else {
-				
 				if (Cur()->wayHome[0])
 					rowPos--; // go up
 				else if (Cur()->wayHome[1])
