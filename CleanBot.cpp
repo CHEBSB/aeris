@@ -6,7 +6,7 @@ using namespace std;
 class stack {
 public:
 	void push(const int);
-	void pop() { ~Arr[--size]; }
+	void pop();
 	int top() { return Arr[size - 1]; }
 	bool Empty() { return size ? 0 : 1; }
 	stack() : size(0), capa(10) { Arr = new int[10]; }
@@ -14,6 +14,22 @@ private:
 	int* Arr;
 	int size;
 	int capa;
+};
+
+class queue {
+public:
+	void push(const int);
+	void pop();
+	int Front() { return Arr[front]; }
+	int Rear() { return Arr[rear]; }
+	bool Empty() { return size ? 0 : 1; }
+	queue() : size(0), capa(10), front(0), rear(0) { Arr = new int[10]; }
+private:
+	int* Arr;
+	int size;
+	int capa;
+	int front;
+	int rear;
 };
 
 class robot;
@@ -80,6 +96,28 @@ void stack::push(const int val)
 		capa = capa * 2;
 	}
 	Arr[size++] = val;
+}
+void stack::pop() 
+{ 
+	if (Empty()) throw "you can't pop an empty stack."; 
+	~Arr[--size]; 
+}
+
+void queue::push(const int val)
+{
+	if ((front == rear) && rear)	rear = front = 0;
+	if (rear == capa) {
+		Arr = (int*)realloc(Arr, sizeof(int) * 2 * capa);
+		capa = capa * 2;
+	}
+	Arr[rear++] = val;
+	size++;
+}
+void queue::pop()
+{
+	if (Empty())	throw "you can't pop an empty queue.";
+	~Arr[front++];
+	size--;
 }
 
 robot::robot() {
