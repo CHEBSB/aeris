@@ -36,7 +36,7 @@ class robot;
 class cell {
 	friend class robot;
 public:
-	cell(bool don, int dist) : done(don), 
+	cell(bool d, int dist) : done(d), 
 	distan(dist) {}
 	cell() {} // default constructor
 private:
@@ -49,7 +49,12 @@ private:
 
 class robot {
 public:
-	robot();
+	robot(ifstream&);
+	void Debugg() { // only used when debugging
+		cout << "aa\n";
+		cout << RowSize << ' ' << ColSize << ' ' << bLife << endl;
+		cout << "cc";
+	}
 	void Dijkstra();
 	void Traversal();	// actual Traversal of the floor
 	void print(ofstream&);
@@ -65,16 +70,12 @@ private:
 	int step;		// total step to traverse the floor
 	queue output1;	// 2 queue to store robot' s position
 	queue output2;	// for final output
-	cell* Cur(const int, const int);
-	cell* Cur() { return Cur(rowPos, colPos); }
-	cell* Up(const int, const int);
-	cell* Up() { return Up(rowPos, colPos); }
-	cell* Down(const int, const int);
-	cell* Down() { return Down(rowPos, colPos); }
-	cell* Left(const int, const int);
-	cell* Left() { return Left(rowPos, colPos); }
-	cell* Right(const int, const int);
-	cell* Right() { return Right(rowPos, colPos); }
+	// current position of the robot
+	cell* Cur() { return &(map[rowPos][colPos]); } 
+	cell* Up();
+	cell* Down();
+	cell* Left();
+	cell* Right();
 	void afterMove();	// after robot move a step, call this function
 	int FindWayBack(const int, const int);
 	void Traverse(const int);		// first step of traversal
@@ -84,9 +85,18 @@ private:
 
 int main()
 {
-	ofstream output;		
-	robot Bot;
+	ofstream output;
+	ifstream data;
 
+	data.open("floor.data", ios::in);
+	if (!data) {
+		cout << "Failed to open Input file";
+		return 1;
+	}
+	robot Bot = robot(data);
+	data.close();
+
+	Bot.Debugg();
 	Bot.Dijkstra();
 	Bot.Traversal();
 	Bot.print(output);
@@ -124,16 +134,10 @@ void queue::pop()
 	size--;
 }
 
-robot::robot() {
-	ifstream data;
+robot::robot(ifstream& data) {
 	int i, j;	// looping index
 	char c;		// 1 char from file
 
-	data.open("floor.data", ios::in);
-	if (!data) {
-		cout << "Cannot open floor.data!";
-		throw "error";
-	}
 	data >> RowSize >> ColSize >> bLife;	// read first line
 	bCurrent = bLife;	// fully charge battery
 	WAYHOME = 0;	// default state
@@ -164,26 +168,22 @@ robot::robot() {
 				throw "Error";
 			}
 		}
-	data.close();
 }
 
-cell* robot::Cur(const int r, const int c) {
-	return &(map[r][c]);
-}
-cell* robot::Up(const int r, const int c) {
-	if (r - 1 >= 0) return &(map[r - 1][c]);
+cell* robot::Up() {
+	if (rowPos - 1 >= 0) return &(map[rowPos - 1][colPos]);
 	return NULL;
 }
-cell* robot::Down(const int r, const int c) {
-	if (r + 1 < RowSize) return &(map[r + 1][c]);
+cell* robot::Down() {
+	if (rowPos + 1 < RowSize) return &(map[rowPos + 1][colPos]);
 	return NULL;
 }
-cell* robot::Left(const int r, const int c) {
-	if (c - 1 >= 0) return &(map[r][c - 1]);
+cell* robot::Left() {
+	if (colPos - 1 >= 0) return &(map[rowPos][colPos - 1]);
 	return NULL;
 }
-cell* robot::Right(const int r, const int c) {
-	if (c + 1 < ColSize) return &(map[r][c + 1]);
+cell* robot::Right() {
+	if (colPos + 1 < ColSize) return &(map[rowPos][colPos + 1]);
 	return NULL;
 }
 
@@ -194,25 +194,25 @@ void robot::Dijkstra()
 	for (int i = 0; i < RowSize; i++)
 		for (int j = 0; j < ColSize; j++) 
 			s[i][j] = false;
-	if (Up(Rrow, Rcol))
-		if (!Up(Rrow, Rcol)->done) {
-			Up(Rrow, Rcol)->distan = 1;
-			Up(Rrow, Rcol)->wayHome[1] = true;
+	if (Rrow - 1 >= 0)
+		if (!map[Rrow - 1][Rcol].done) {
+			map[Rrow - 1][Rcol].distan = 1;
+			map[Rrow - 1][Rcol].wayHome[1] = true;
 		}
-	if (Down(Rrow, Rcol))
-		if (!Down(Rrow, Rcol)->done) {
-			Down(Rrow, Rcol)->distan = 1;
-			Down(Rrow, Rcol)->wayHome[0] = true;
+	if (Rrow + 1 < RowSize)
+		if (!map[Rrow + 1][Rcol].done) {
+			map[Rrow + 1][Rcol].distan = 1;
+			map[Rrow + 1][Rcol].wayHome[0] = true;
 		}
-	if (Left(Rrow, Rcol))
-		if (!Left(Rrow, Rcol)->done) {
-			Left(Rrow, Rcol)->distan = 1;
-			Left(Rrow, Rcol)->wayHome[3] = true;
+	if (Rcol - 1 >= 0)
+		if (!map[Rrow][Rcol - 1].done) {
+			map[Rrow][Rcol - 1].distan = 1;
+			map[Rrow][Rcol - 1].wayHome[3] = true;
 		}
-	if (Right(Rrow, Rcol))
-		if (!Right(Rrow, Rcol)->done) {
-			Right(Rrow, Rcol)->distan = 1;
-			Left(Rrow, Rcol)->wayHome[2] = true;
+	if (Rcol + 1 < ColSize)
+		if (!map[Rrow][Rcol + 1].done) {
+			map[Rrow][Rcol + 1].distan = 1;
+			map[Rrow][Rcol + 1].wayHome[2] = true;
 		}
 	s[Rrow][Rcol] = true;
 
@@ -331,22 +331,22 @@ int robot::FindWayBack(const int r, const int c)
 {
 	int bestOption = -1, secChoice = -1;
 
-	if (Cur(r, c)->wayHome[0]) {
-		if (!Up(r, c)->done) bestOption = 0;
+	if (map[r][c].wayHome[0]) {
+		if (!map[r - 1][c].done) bestOption = 0;
 		else secChoice = 0;
 	} // up
-	if (Cur(r, c)->wayHome[1] && bestOption == -1) {
-		if (!Down(r, c)->done)	bestOption = 1;
+	if (map[r][c].wayHome[1] && bestOption == -1) {
+		if (!map[r + 1][c].done) bestOption = 1;
 		else if (secChoice == -1)
 			secChoice = 1;
 	} // down
-	if (Cur(r, c)->wayHome[2] && bestOption == -1) {
-		if (!Left(r, c)->done)	bestOption = 2;
+	if (map[r][c].wayHome[2] && bestOption == -1) {
+		if (!map[r][c - 1].done) bestOption = 2;
 		else if (secChoice == -1)
 			secChoice = 2;
 	} // left
-	if (Cur(r, c)->wayHome[3] && bestOption == -1) {
-		if (!Right(r, c)->done) bestOption = 3;
+	if (map[r][c].wayHome[3] && bestOption == -1) {
+		if (!map[r][c + 1].done) bestOption = 3;
 		else if (secChoice == -1)
 			secChoice = 3;
 	} // right
