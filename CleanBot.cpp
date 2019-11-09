@@ -52,6 +52,7 @@ public:
 	robot();
 	void Dijkstra();
 	void Traversal();	// actual Traversal of the floor
+	void print(ofstream&);
 private:
 	cell** map;		// the informataion of area to traverse
 	int bLife;		// battery lifetime
@@ -61,6 +62,9 @@ private:
 	int rowPos, colPos;	// current position of bot
 	int RowSize, ColSize;	// array size
 	int Rrow, Rcol;		// position of R
+	int step;		// total step to traverse the floor
+	queue output1;	// 2 queue to store robot' s position
+	queue output2;	// for final output
 	cell* Cur(const int, const int);
 	cell* Cur() { return Cur(rowPos, colPos); }
 	cell* Up(const int, const int);
@@ -85,7 +89,7 @@ int main()
 
 	Bot.Dijkstra();
 	Bot.Traversal();
-
+	Bot.print(output);
 	return 0;
 }
 
@@ -126,9 +130,14 @@ robot::robot() {
 	char c;		// 1 char from file
 
 	data.open("floor.data", ios::in);
+	if (!data) {
+		cout << "Cannot open floor.data!";
+		throw "error";
+	}
 	data >> RowSize >> ColSize >> bLife;	// read first line
 	bCurrent = bLife;	// fully charge battery
 	WAYHOME = 0;	// default state
+	step = 0;
 	map = new cell*[RowSize];	// memory allocate
 	for (i = 0; i < RowSize; i++)
 		map[i] = new cell[ColSize];
@@ -285,6 +294,28 @@ void robot::afterMove()
 		WAYHOME = 0;
 		bCurrent = bLife;	// recharge
 	}
+	output1.push(rowPos);
+	output2.push(colPos);
+	step++;
+}
+
+void robot::print(ofstream& output)
+{
+	output.open("final.path", ios::out);
+	if (!output) {
+		cout << "Cannot open final.path!";
+		throw "error";
+	}
+	output << step << endl;
+	output << Rrow << ' ';
+	output << Rcol << endl;
+	while (!output1.Empty()) {
+		output << output1.Front() << ' ';
+		output << output2.Front() << endl;
+		output1.pop();
+		output2.pop();
+	}
+	output.close();
 }
 
 void robot::Traversal()
