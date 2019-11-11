@@ -50,11 +50,6 @@ private:
 class robot {
 public:
 	robot(ifstream&);
-	void Debugg() { // only used when debugging
-		cout << "aa\n";
-		cout << RowSize << ' ' << ColSize << ' ' << bLife << endl;
-		cout << "cc";
-	}
 	void Dijkstra();
 	void Traversal();	// actual Traversal of the floor
 	void print(ofstream&);
@@ -96,7 +91,6 @@ int main()
 	robot Bot = robot(data);
 	data.close();
 
-	Bot.Debugg();
 	Bot.Dijkstra();
 	Bot.Traversal();
 	Bot.print(output);
@@ -113,7 +107,7 @@ void stack::push(const int val)
 }
 void stack::pop() 
 { 
-	if (Empty()) throw "you can't pop an empty stack."; 
+	if (Empty()) throw "you can't pop an empty stack"; 
 	~Arr[--size]; 
 }
 
@@ -129,7 +123,7 @@ void queue::push(const int val)
 }
 void queue::pop()
 {
-	if (Empty())	throw "you can't pop an empty queue.";
+	if (Empty())	throw "you can't pop an empty queue";
 	~Arr[front++];
 	size--;
 }
@@ -223,7 +217,7 @@ void robot::Dijkstra()
 				// choose(ur, uc)
 				for (int m = 0; m < RowSize; m++)
 					for (int n = 0; n < ColSize; n++) 
-						if (!map[m][n].done && !s[m][m])
+						if (!map[m][n].done && !s[m][n])
 							if (map[m][n].distan < D) {
 								ur = m; uc = n; 
 								D = map[m][n].distan;
@@ -235,7 +229,8 @@ void robot::Dijkstra()
 					if ((!map[ur - 1][uc].done) && (!s[ur - 1][uc])) {
 						if (map[ur][uc].distan + 1 < map[ur - 1][uc].distan) {
 							map[ur - 1][uc].distan = map[ur][uc].distan + 1;
-							for (int i = 0; i < 4; i++) map[ur - 1][uc].wayHome[i] = false;
+							for (int i = 0; i < 4; i++) // reset wayHome
+								map[ur - 1][uc].wayHome[i] = false;
 							map[ur - 1][uc].wayHome[1] = true;
 						}
 						else if (map[ur][uc].distan + 1 == map[ur - 1][uc].distan)
@@ -247,7 +242,8 @@ void robot::Dijkstra()
 					if ((!map[ur + 1][uc].done) && (!s[ur + 1][uc])) {
 						if (map[ur][uc].distan + 1 < map[ur + 1][uc].distan) {
 							map[ur + 1][uc].distan = map[ur][uc].distan + 1;
-							for (int i = 0; i < 4; i++) map[ur + 1][uc].wayHome[i] = false;
+							for (int i = 0; i < 4; i++) // reset wayHome
+								map[ur + 1][uc].wayHome[i] = false;
 							map[ur + 1][uc].wayHome[0] = true;
 						}
 						else if (map[ur][uc].distan + 1 == map[ur + 1][uc].distan)
@@ -259,7 +255,8 @@ void robot::Dijkstra()
 					if ((!map[ur][uc - 1].done) && (!s[ur][uc - 1])) {
 						if (map[ur][uc].distan + 1 < map[ur][uc - 1].distan) {
 							map[ur][uc - 1].distan = map[ur][uc].distan + 1;
-							for (int i = 0; i < 4; i++) map[ur][uc - 1].wayHome[i] = false;
+							for (int i = 0; i < 4; i++) // reset wayHome
+								map[ur][uc - 1].wayHome[i] = false;
 							map[ur][uc - 1].wayHome[3] = true;
 						}
 						else if (map[ur][uc].distan + 1 == map[ur][uc - 1].distan)
@@ -271,7 +268,8 @@ void robot::Dijkstra()
 					if ((!map[ur][uc + 1].done) && (!s[ur][uc + 1])) {
 						if (map[ur][uc].distan + 1 < map[ur][uc + 1].distan) {
 							map[ur][uc + 1].distan = map[ur][uc].distan + 1;
-							for (int i = 0; i < 4; i++) map[ur][uc + 1].wayHome[i] = false;
+							for (int i = 0; i < 4; i++) // reset wayHome
+								map[ur][uc + 1].wayHome[i] = false;
 							map[ur][uc + 1].wayHome[2] = true;
 						}
 						else if (map[ur][uc].distan + 1 == map[ur][uc + 1].distan)
