@@ -53,6 +53,7 @@ public:
 	void Dijkstra();
 	void Traversal();	// actual Traversal of the floor
 	void print(ofstream&);
+	void ForDebug();	/**/
 private:
 	cell** map;		// the informataion of area to traverse
 	int bLife;		// battery lifetime
@@ -90,13 +91,26 @@ int main()
 	}
 	robot Bot = robot(data);
 	data.close();
-
+	
 	Bot.Dijkstra();
+	Bot.ForDebug();
 	Bot.Traversal();
+	cout << "Hello, world!\n";
 	Bot.print(output);
 	return 0;
 }
-
+void robot::ForDebug() {
+	cout << "Distance of the floor:\n";
+	for (int i = 0; i < RowSize; i++) {
+		cout << '\t';
+		for (int j = 0; j < ColSize; j++) {
+			if (map[i][j].done && map[i][j].distan) 
+				cout << '#';
+			else cout << map[i][j].distan;
+		}
+		cout << endl;
+	}
+}
 void stack::push(const int val)
 {
 	if (size == capa) {
@@ -305,11 +319,15 @@ void robot::print(ofstream& output)
 		throw "error";
 	}
 	output << step << endl;
+	cout << "Total steps needed: " << step << endl;	/**/
 	output << Rrow << ' ';
+	cout << "Position of R: (" << Rrow << ", " << Rcol << ")\n"; /**/
 	output << Rcol << endl;
 	while (!output1.Empty()) {
 		output << output1.Front() << ' ';
+		cout << output1.Front() << ' '; /**/
 		output << output2.Front() << endl;
+		cout << output2.Front() << endl; /**/
 		output1.pop();
 		output2.pop();
 	}
