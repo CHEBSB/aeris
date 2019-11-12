@@ -74,6 +74,7 @@ private:
 	cell* Right();
 	void afterMove();	// after robot move a step, call this function
 	int FindWayBack(const int, const int);
+	int FindWayOut(const int, const int);
 	void Traverse(const int);		// first step of traversal
 	void PointWiseTraverse(int, int);	/* find the
 	optimized way to clean a particular point */
@@ -93,13 +94,13 @@ int main()
 	data.close();
 	
 	Bot.Dijkstra();
-	Bot.ForDebug();
+	Bot.ForDebug();	/**/
 	Bot.Traversal();
-	cout << "Hello, world!\n";
 	Bot.print(output);
 	return 0;
 }
-void robot::ForDebug() {
+void robot::ForDebug() {	/**/
+	cout << "Position of R: (" << Rrow << ", " << Rcol << ")\n";
 	cout << "Distance of the floor:\n";
 	for (int i = 0; i < RowSize; i++) {
 		cout << '\t';
@@ -303,12 +304,25 @@ void robot::afterMove()
 	is not enough for going deeper	*/
 		WAYHOME = 1;
 	if (rowPos == Rrow && colPos == Rcol) {
-		WAYHOME = 0;
 		bCurrent = bLife;	// recharge
+		WAYHOME = 0;
 	}
-	output1.push(rowPos);
-	output2.push(colPos);
+	output1.push(rowPos);	// store position
+	output2.push(colPos);	// for final output
 	step++;
+}
+
+void robot::Traversal()
+{	
+	int Direction = FindWayOut(Rrow, Rcol);
+	if (Direction != -1) Traverse(Direction);
+	else return;	// no area can be clean, End.
+
+	cout << "The world wonders.\n";	/**/
+	for (int i = 0; i < RowSize; i++)
+		for (int j = 0; j < ColSize; j++)
+			if (!map[i][j].done)
+				PointWiseTraverse(i, j);
 }
 
 void robot::print(ofstream& output)
@@ -320,9 +334,8 @@ void robot::print(ofstream& output)
 	}
 	output << step << endl;
 	cout << "Total steps needed: " << step << endl;	/**/
-	output << Rrow << ' ';
+	output << Rrow << ' ' << Rcol << endl;
 	cout << "Position of R: (" << Rrow << ", " << Rcol << ")\n"; /**/
-	output << Rcol << endl;
 	while (!output1.Empty()) {
 		output << output1.Front() << ' ';
 		cout << output1.Front() << ' '; /**/
@@ -334,75 +347,86 @@ void robot::print(ofstream& output)
 	output.close();
 }
 
-void robot::Traversal()
-{
-	Traverse(-1);
-	for (int i = 0; i < RowSize; i++)
-		for (int j = 0; j < ColSize; j++)
-			if (!map[i][j].done)
-				PointWiseTraverse(i, j);
-}
-
 int robot::FindWayBack(const int r, const int c)
 {
-	int bestOption = -1, secChoice = -1;
+	int secChoice = -1;
 
 	if (map[r][c].wayHome[0]) {
-		if (!map[r - 1][c].done) bestOption = 0;
+		if (!map[r - 1][c].done) return 0;
 		else secChoice = 0;
 	} // up
-	if (map[r][c].wayHome[1] && bestOption == -1) {
-		if (!map[r + 1][c].done) bestOption = 1;
-		else if (secChoice == -1)
-			secChoice = 1;
+	if (map[r][c].wayHome[1]) {
+		if (!map[r + 1][c].done) return 1;
+		else if (secChoice == -1)	secChoice = 1;
 	} // down
-	if (map[r][c].wayHome[2] && bestOption == -1) {
-		if (!map[r][c - 1].done) bestOption = 2;
-		else if (secChoice == -1)
-			secChoice = 2;
+	if (map[r][c].wayHome[2]) {
+		if (!map[r][c - 1].done) return 2;
+		else if (secChoice == -1)	secChoice = 2;
 	} // left
-	if (map[r][c].wayHome[3] && bestOption == -1) {
-		if (!map[r][c + 1].done) bestOption = 3;
-		else if (secChoice == -1)
-			secChoice = 3;
+	if (map[r][c].wayHome[3]) {
+		if (!map[r][c + 1].done) return 3;
+		else if (secChoice == -1)	secChoice = 3;
 	} // right
 
-	if (bestOption != -1) return bestOption;
 	return secChoice;
 }
-
+int robot::FindWayOut(const int r, const int c) 
+{
+	if (r - 1 >= 0) {
+		if (!map[r - 1][c].done) 
+			return 0;
+	}
+	if (r + 1 < RowSize) {
+		if (!map[r + 1][c].done) 
+			return 1;
+	}
+	if (c - 1 >= 0) {
+		if (!map[r][c - 1].done)
+			return 2;
+	}
+	if (c + 1 < ColSize) {
+		if (!map[r][c + 1].done)
+			return 3;
+	}
+	return -1;	// all neighbour cleaned
+}
 void robot::Traverse(const int from)
 {
 	switch (from) {
-	case 0: rowPos--; 
+	case 0: 
+		rowPos--; 
 		break;
-	case 1: rowPos++; 
+	case 1:
+		rowPos++; 
 		break;
-	case 2: colPos--; 
+	case 2: 
+		colPos--; 
 		break;
-	case 3: colPos++; 
+	case 3: 
+		colPos++; 
+		break;
+	default: 
+		throw 404;
+		break;
 	}
 	afterMove();
-	if (!WAYHOME) { // still going deeper
-		if (!Up()->done) 
-			Traverse(0);	// go up	
-		else if (!Down()->done) 
-			Traverse(1);	// go down
-		else if (!Left()->done) 
-			Traverse(2);	// go left	
-		else if (!Right()->done) 
-			Traverse(3);	// go right
+	cout << "Current Position: (" << rowPos << ", "<< colPos << ")\n";	/**/
+	if (!WAYHOME) { // enough battery, move deeper
+		int direction = FindWayOut(rowPos, colPos);
+		if (direction != -1) {
+			Traverse(direction);
+		}
 		else {
-			if (rowPos == Rrow && colPos == Rcol) 
-				return;
+			if (rowPos == Rrow && colPos == Rcol)
+				return;	// turn to stage 2: PointWiseTraverse
 			else {
-				if (Cur()->wayHome[0]) 
+				if (Cur()->wayHome[0])
 					Traverse(0);	// go up
-				else if (Cur()->wayHome[1]) 
+				else if (Cur()->wayHome[1])
 					Traverse(1);	// go down
-				else if (Cur()->wayHome[2]) 
+				else if (Cur()->wayHome[2])
 					Traverse(2);	// go left
-				else if (Cur()->wayHome[3]) 
+				else if (Cur()->wayHome[3])
 					Traverse(3);	// go right
 				else throw 404;
 			}
@@ -421,6 +445,10 @@ void robot::Traverse(const int from)
 			break;
 		case 3: // go right
 			Traverse(3);
+			break;
+		default:
+			throw 404;
+			break;
 		}
 	}
 }
@@ -448,32 +476,52 @@ void robot::PointWiseTraverse(int r, int c)
 		case 3: // go right
 			c++;
 			S.push(2);
+			break;
+		default:
+			throw 404;
+			break;
 		}
 	}
 	// at this moment, Bot should be at R
 	for (; !S.Empty(); afterMove(), S.pop()) {
 		switch (S.top()) {
-		case 0:	rowPos--;
+		case 0:	
+			rowPos--;
 			break;
-		case 1:	rowPos++;
+		case 1:	
+			rowPos++;
 			break;
-		case 2:	colPos--;
+		case 2:	
+			colPos--;
 			break;
-		case 3:	colPos++;
+		case 3:	
+			colPos++;
+			break;
+		default:
+			throw 404;
+			break;
 		}
 	}
 	/* Now the bot should be at the initially given position,
-	with bCurrent = bLife - distan of that point */
+	with bCurrent = bLife - (distan of that point) */
 	for (; rowPos != Rrow || colPos != Rcol; afterMove()) {
 		if (WAYHOME) {	// time to go home
 			switch (FindWayBack(rowPos, colPos)) {
-			case 0:	rowPos--;
+			case 0:	
+				rowPos--;
 				break;
-			case 1:	rowPos++;
+			case 1:	
+				rowPos++;
 				break;
-			case 2:	colPos--;
+			case 2:	
+				colPos--;
 				break;
-			case 3:	colPos++;
+			case 3:
+				colPos++;
+				break;
+			default: 
+				throw 404;
+				break;
 			}
 		}
 		else {	// keep working
