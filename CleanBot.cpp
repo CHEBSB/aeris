@@ -286,6 +286,8 @@ void robot::afterMove()
 		bCurrent = bLife;	// recharge
 		WAYHOME = 0;
 	}
+	cout << "Current Position: (" << rowPos << ", " << colPos << ")\t";	/**/
+	cout << "Battery left: " << bCurrent << endl; /**/
 	output1.push(rowPos);	// store position
 	output2.push(colPos);	// for final output
 	step++;
@@ -326,14 +328,10 @@ void robot::print(ofstream& output)
 		throw "error";
 	}
 	output << step << endl;
-	cout << "Total steps needed: " << step << endl;	/**/
 	output << Rrow << ' ' << Rcol << endl;
-	cout << "Position of R: (" << Rrow << ", " << Rcol << ")\n"; /**/
 	while (!output1.Empty()) {
 		output << output1.Front() << ' ';
-		cout << output1.Front() << ' '; /**/
 		output << output2.Front() << endl;
-		cout << output2.Front() << endl; /**/
 		output1.pop();
 		output2.pop();
 	}
@@ -419,8 +417,6 @@ void robot::Traverse(const int from)
 		break;
 	}
 	afterMove();
-	cout << "Current Position: (" << rowPos << ", "<< colPos << ")\t";	/**/
-	cout << "Battery left: " << bCurrent << endl; /**/
 	if (!WAYHOME) { // enough battery, move deeper
 		switch (FindWayOut(rowPos, colPos)) {
 		case 0:
