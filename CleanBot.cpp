@@ -54,7 +54,6 @@ public:
 	void Dijkstra();
 	void Traversal();	// actual Traversal of the floor
 	void print(ofstream&);
-	void ForDebug();	/**/
 private:
 	cell** map;		// the informataion of area to traverse
 	int bLife;		// battery lifetime
@@ -90,24 +89,11 @@ int main()
 	data.close();
 	
 	Bot.Dijkstra();
-	Bot.ForDebug();	/**/
 	Bot.Traversal();
 	Bot.print(output);
 	return 0;
 }
-void robot::ForDebug() {	/**/
-	cout << "Position of R: (" << Rrow << ", " << Rcol << ")\n";
-	cout << "Distance of the floor:\n";
-	for (int i = 0; i < RowSize; i++) {
-		cout << '\t';
-		for (int j = 0; j < ColSize; j++) {
-			if (map[i][j].done && map[i][j].distan) 
-				cout << '#';
-			else cout << map[i][j].distan;
-		}
-		cout << endl;
-	}
-}
+
 void stack::push(const int val)
 {
 	if (size == capa) {
@@ -286,8 +272,7 @@ void robot::afterMove()
 		bCurrent = bLife;	// recharge
 		WAYHOME = 0;
 	}
-	cout << "Current Position: (" << rowPos << ", " << colPos << ")\t";	/**/
-	cout << "Battery left: " << bCurrent << endl; /**/
+	
 	output1.push(rowPos);	// store position
 	output2.push(colPos);	// for final output
 	step++;
@@ -313,7 +298,6 @@ void robot::Traversal()
 		return;
 	}
 
-	cout << "The world wonders.\n";	/**/
 	for (int i = 0; i < RowSize; i++)
 		for (int j = 0; j < ColSize; j++)
 			if (!map[i][j].done)
