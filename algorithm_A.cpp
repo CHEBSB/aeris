@@ -258,19 +258,6 @@ void algorithm_A(Board board, Player player, int index[]) {
 			}
 		}
 
-	// choose the one with most nearby blocks //
-	int MaxCap = 1;
-	for (i = 0; i < 5; i++)
-		for (j = 0; j < 6; j++) {
-			if (candidate[i][j] == 1) {
-				if (board.get_capacity(i, j) > MaxCap) {
-					MaxCap = board.get_capacity(i, j);
-				}
-				else if (board.get_capacity(i, j) < MaxCap) {
-					candidate[i][j] = 0;
-				}
-			}
-		}
 	cout << endl << "possible position: ";
 	for (i = 0; i < 5; i++)
 		for (j = 0; j < 6; j++)
