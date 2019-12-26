@@ -30,14 +30,11 @@ void algorithm_A(Board board, Player player, int index[]) {
 	cout << "enter Algorithm_A\n";
 	class stack {
 	private:
-		pair<int, int>* Array;
+		pair<int, int> Array[20];
 		int size;
 		int capa;
 	public:
-		stack() : capa(20), size(0)
-		{
-			Array = new pair<int, int>[20];
-		}
+		stack() : capa(20), size(0) {}
 		void push(const int r, const int c) {
 			// search if already in the queue. If so, don't push.
 			for (int i = 0; i < size; i++)
@@ -49,6 +46,7 @@ void algorithm_A(Board board, Player player, int index[]) {
 			if (size == 0) throw "Can't pop an empty stack!";
 			Array[--size].~pair<int, int>();
 		}
+		bool Empty() { return (size == 0); }
 		pair<int, int> Top() { return Array[size - 1]; }
 	};
 
