@@ -27,11 +27,7 @@ using namespace std;
 
 
 void algorithm_A(Board board, Player player, int index[]) {
-	// cout << board.get_capacity(0, 0) << endl;
-	// cout << board.get_orbs_num(0, 0) << endl;
-	// cout << board.get_cell_color(0, 0) << endl;
-	// board.print_current_board(0, 0, 0);
-
+	cout << "enter Algorithm_A\n";
 	class stack {
 	private:
 		pair<int, int>* Array;
@@ -50,16 +46,13 @@ void algorithm_A(Board board, Player player, int index[]) {
 			Array[size++] = pair<int, int>(r, c);
 		}
 		void pop() {
-			if (Empty()) throw "Can't pop an empty stack!";
+			if (size == 0) throw "Can't pop an empty stack!";
 			Array[--size].~pair<int, int>();
 		}
 		pair<int, int> Top() { return Array[size - 1]; }
-		bool Empty() { return (size == 0); }
 	};
-	//////////// Random Algorithm ////////////
-	// Here is the random algorithm for your reference, you can delete or comment it.
-	srand(time(NULL));
-	class cell {
+
+	class cell {	// a cell on the board
 	public:
 		cell() {}
 		int cap;	// how many orbs at most it can contain
@@ -74,34 +67,11 @@ void algorithm_A(Board board, Player player, int index[]) {
 		}
 	};
 
-	class node {
-	public:
-		node() :whoseTurn(1) {}
+	class node {	// one stage of the board
+	private:
 		stack ToBeExp;	// cell in this queue are going to explode
 		stack ToBeCheck;	// cell in this queue are to be check
 		bool whoseTurn;	// 1 for my turn, 0 for my oppenent's
-		cell B[5][6];	// the board
-		node* child[5][6];	// 1-step-after possibilities
-		void AfterInsert(const int r, const int c) {
-			int i, j;
-			check(r, c);
-			while (!(ToBeExp.Empty() && ToBeCheck.Empty())) {
-				while (!ToBeExp.Empty()) {
-					i = ToBeExp.Top().first;
-					j = ToBeExp.Top().second;
-					Explode(i, j);
-					if (i - 1 >= 0) ToBeCheck.push(i - 1, j);
-					if (i + 1 < 5) ToBeCheck.push(i + 1, j);
-					if (j - 1 >= 0) ToBeCheck.push(i, j - 1);
-					if (j + 1 < 6) ToBeCheck.push(i, j + 1);
-					ToBeExp.pop();
-				}
-				while (!ToBeCheck.Empty()) {
-					check(ToBeCheck.Top().first, ToBeCheck.Top().second);
-					ToBeCheck.pop();
-				}
-			}
-		}
 		void check(const int r, const int c) {
 			if (B[r][c].size >= B[r][c].cap)
 				ToBeExp.push(r, c);
@@ -125,6 +95,30 @@ void algorithm_A(Board board, Player player, int index[]) {
 				B[r][c + 1].size++;
 			}
 		}
+		void AfterInsert(const int r, const int c) {
+			int i, j;
+			check(r, c);
+			while (!(ToBeExp.Empty() && ToBeCheck.Empty())) {
+				while (!ToBeExp.Empty()) {
+					i = ToBeExp.Top().first;
+					j = ToBeExp.Top().second;
+					Explode(i, j);
+					if (i - 1 >= 0) ToBeCheck.push(i - 1, j);
+					if (i + 1 < 5) ToBeCheck.push(i + 1, j);
+					if (j - 1 >= 0) ToBeCheck.push(i, j - 1);
+					if (j + 1 < 6) ToBeCheck.push(i, j + 1);
+					ToBeExp.pop();
+				}
+				while (!ToBeCheck.Empty()) {
+					check(ToBeCheck.Top().first, ToBeCheck.Top().second);
+					ToBeCheck.pop();
+				}
+			}
+		}
+	public:
+		node() :whoseTurn(1) {}
+		cell B[5][6];	// the board
+		node* child[5][6];	// 1-step-after possibilities
 		node(node* Parent, int r, int c)
 		{	// constructor using its parent
 			for (int i = 0; i < 5; i++)
@@ -138,30 +132,27 @@ void algorithm_A(Board board, Player player, int index[]) {
 		void initChild()
 		{	// initialize all its children
 			for (int i = 0; i < 5; i++)
-				for (int j = 0; j < 6; j++) {
+				for (int j = 0; j < 6; j++)
 					if (B[i][j].col == whoseTurn || B[i][j].size == 0)
 						child[i][j] = new node(this, i, j);
 					else
 						child[i][j] = NULL;
-				}
 		}
 		int countColor(int color)
-		{
+		{	// count # of orb of that color on the board
 			int count = 0;
 			for (int i = 0; i < 5; i++)
 				for (int j = 0; j < 6; j++)
-					if (B[i][j].col == color)
-						count += B[i][j].size;
+					if (B[i][j].col == color)	count += B[i][j].size;
 			return count;
 		}
 	};
-
-	srand(time(NULL));
-	int i, j;
+	int i, j;			// looping index
 	int color = player.get_color();
-	bool candidate[5][6] = { 0 };
+	bool candidate[5][6] = { 0 };	// cell suitable to place orb
+	int NumCandidate = 0;			// size of candidate array
+	node* Current = new node;	// current board
 
-	node* Current = new node;
 	for (i = 0; i < 5; i++)		// init Current
 		for (j = 0; j < 6; j++) {
 			Current->B[i][j].cap = board.get_capacity(i, j);
@@ -180,19 +171,19 @@ void algorithm_A(Board board, Player player, int index[]) {
 				if (Current->child[i][j]->countColor(0) == 0) {
 					index[0] = i;
 					index[1] = j;
-					cout << "Get!\n";
-					return;
+					return;			// win
 				}
 	for (i = 0; i < 5; i++)		// init 2nd generation child
 		for (j = 0; j < 6; j++)
 			if (Current->child[i][j] != NULL)
 				Current->child[i][j]->initChild();
-
-	int worstCase[5][6];
+	int worstCase[5][6];	/* worst case of number of my orbs
+	of each 1st-generation child, counting their derivative 2nd-generatnio child */
+	int BWC = 0;	// Best of the worst cases
 	for (i = 0; i < 5; i++)	// initially fill worstCase array
 		for (j = 0; j < 6; j++)
 			worstCase[i][j] = 220;
-	for (i = 0; i < 5; i++)	// count worst Case of each 1-generation child
+	for (i = 0; i < 5; i++)	// count worst Case
 		for (j = 0; j < 6; j++)
 			if (Current->child[i][j] != NULL) {
 				for (int m = 0; m < 5; m++)
@@ -201,62 +192,53 @@ void algorithm_A(Board board, Player player, int index[]) {
 							if (Current->child[i][j]->child[m][n]->countColor(1) < worstCase[i][j])
 								worstCase[i][j] = Current->child[i][j]->child[m][n]->countColor(1);
 			}
-	int BWC = 0;	// Best of the worst case
-	for (i = 0; i < 5; i++)
-		for (j = 0; j < 6; j++) {
+	for (i = 0; i < 5; i++)	// choose best of worst case
+		for (j = 0; j < 6; j++)
 			if (worstCase[i][j] >= BWC && worstCase[i][j] < 200) {
 				if (worstCase[i][j] > BWC) {
-					for (int i = 0; i < 5; i++)	// clear candidate array
-						for (int j = 0; j < 6; j++)
-							candidate[i][j] = 0;
+					for (int m = 0; m < 5; m++)	// clear candidate array
+						for (int n = 0; n < 6; n++)
+							candidate[m][n] = 0;
 					BWC = worstCase[i][j];
 				}
 				candidate[i][j] = 1;
 			}
-		}
 
-	int NumCandidate = 0;
 	for (i = 0; i < 5; i++)
 		for (j = 0; j < 6; j++)
 			if (candidate[i][j] == 1) NumCandidate++;
-
 	for (i = 0; i < 5; i++)		// remove those cell slower than opponent
-		for (j = 0; j < 6 && NumCandidate > 1; j++) {
+		for (j = 0; j < 6 && NumCandidate > 1; j++)
 			if (candidate[i][j] == 1) {
-				if (i - 1 >= 0) {				// check up
+				if (i - 1 >= 0) 				// check up
 					if (board.get_orbs_num(i - 1, j) != 0
 						&& board.get_cell_color(i - 1, j) != color
 						&& Need(i - 1, j) < Need(i, j)) {
 						candidate[i][j] = 0;
 						NumCandidate--;
 					}
-				}
-				if (i + 1 < 5) {				// check down
+				if (i + 1 < 5) 				// check down
 					if (board.get_orbs_num(i + 1, j) != 0
 						&& board.get_cell_color(i + 1, j) != color
 						&& Need(i + 1, j) < Need(i, j)) {
 						candidate[i][j] = 0;
 						NumCandidate--;
 					}
-				}
-				if (j - 1 >= 0) { 				// check left
+				if (j - 1 >= 0)  				// check left
 					if (board.get_orbs_num(i, j - 1) != 0
 						&& board.get_cell_color(i, j - 1) != color
 						&& Need(i, j - 1) < Need(i, j)) {
 						candidate[i][j] = 0;
 						NumCandidate--;
 					}
-				}
-				if (j - 1 >= 0) {				// check right
+				if (j + 1 < 6) 				// check right
 					if (board.get_orbs_num(i, j + 1) != 0
 						&& board.get_cell_color(i, j + 1) != color
 						&& Need(i, j + 1) < Need(i, j)) {
 						candidate[i][j] = 0;
 						NumCandidate--;
 					}
-				}
 			}
-		}
 
 	cout << endl << "possible position: ";
 	for (i = 0; i < 5; i++)
@@ -265,6 +247,7 @@ void algorithm_A(Board board, Player player, int index[]) {
 				cout << '(' << i << ", " << j << ") ";
 	cout << endl;
 
+	srand(time(NULL));
 	if (NumCandidate != 0) {
 		while (1) {
 			i = rand() % 5;
@@ -276,9 +259,11 @@ void algorithm_A(Board board, Player player, int index[]) {
 		while (1) {
 			i = rand() % 5;
 			j = rand() % 6;
-			if (board.get_cell_color(i, j) == color || board.get_orbs_num(i, j) == 0) break;
+			if (board.get_cell_color(i, j) == color
+				|| board.get_orbs_num(i, j) == 0) break;
 		}
 	}
 	index[0] = i;
 	index[1] = j;
+	cout << "exit Algorithm_A\n";
 }
