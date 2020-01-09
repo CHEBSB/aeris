@@ -2,32 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include "../include/algorithm.h"
-#define Need(i, j) (board.get_capacity(i, j) - board.get_orbs_num(i, j))
 using namespace std;
 
-/******************************************************
- * In your algorithm, you can just use the the funcitons
- * listed by TA to get the board information.(functions
- * 1. ~ 4. are listed in next block)
- *
- * The STL library functions is not allowed to use.
-******************************************************/
-
-/*************************************************************************
- * 1. int board.get_orbs_num(int row_index, int col_index)
- * 2. int board.get_capacity(int row_index, int col_index)
- * 3. char board.get_cell_color(int row_index, int col_index)
- * 4. void board.print_current_board(int row_index, int col_index, int round)
- *
- * 1. The function that return the number of orbs in cell(row, col)
- * 2. The function that return the orb capacity of the cell(row, col)
- * 3. The function that return the color fo the cell(row, col)
- * 4. The function that print out the current board statement
-*************************************************************************/
-
-
 void algorithm_A(Board board, Player player, int index[]) {
-	cout << "enter Algorithm_A\n";
+	cout << "enter my Algorithm\n";
 	class stack {
 	private:
 		pair<int, int> Array[20];
@@ -148,7 +126,6 @@ void algorithm_A(Board board, Player player, int index[]) {
 	int i, j;			// looping index
 	int color = player.get_color();
 	bool candidate[5][6] = { 0 };	// cell suitable to place orb
-	int NumCandidate = 0;			// size of candidate array
 	node* Current = new node;	// current board
 
 	for (i = 0; i < 5; i++)		// init Current
@@ -201,67 +178,13 @@ void algorithm_A(Board board, Player player, int index[]) {
 				}
 				candidate[i][j] = 1;
 			}
-
-	for (i = 0; i < 5; i++)
-		for (j = 0; j < 6; j++)
-			if (candidate[i][j] == 1) NumCandidate++;
-	for (i = 0; i < 5; i++)		// remove those cell slower than opponent
-		for (j = 0; j < 6 && NumCandidate > 1; j++)
-			if (candidate[i][j] == 1) {
-				if (i - 1 >= 0) 				// check up
-					if (board.get_orbs_num(i - 1, j) != 0
-						&& board.get_cell_color(i - 1, j) != color
-						&& Need(i - 1, j) < Need(i, j)) {
-						candidate[i][j] = 0;
-						NumCandidate--;
-					}
-				if (i + 1 < 5) 				// check down
-					if (board.get_orbs_num(i + 1, j) != 0
-						&& board.get_cell_color(i + 1, j) != color
-						&& Need(i + 1, j) < Need(i, j)) {
-						candidate[i][j] = 0;
-						NumCandidate--;
-					}
-				if (j - 1 >= 0)  				// check left
-					if (board.get_orbs_num(i, j - 1) != 0
-						&& board.get_cell_color(i, j - 1) != color
-						&& Need(i, j - 1) < Need(i, j)) {
-						candidate[i][j] = 0;
-						NumCandidate--;
-					}
-				if (j + 1 < 6) 				// check right
-					if (board.get_orbs_num(i, j + 1) != 0
-						&& board.get_cell_color(i, j + 1) != color
-						&& Need(i, j + 1) < Need(i, j)) {
-						candidate[i][j] = 0;
-						NumCandidate--;
-					}
-			}
-
-	cout << endl << "possible position: ";
-	for (i = 0; i < 5; i++)
-		for (j = 0; j < 6; j++)
-			if (candidate[i][j] == 1)
-				cout << '(' << i << ", " << j << ") ";
-	cout << endl;
-
 	srand(time(NULL));
-	if (NumCandidate != 0) {
-		while (1) {
-			i = rand() % 5;
-			j = rand() % 6;
-			if (candidate[i][j] == 1) break;
-		}
-	}
-	else {
-		while (1) {
-			i = rand() % 5;
-			j = rand() % 6;
-			if (board.get_cell_color(i, j) == color
-				|| board.get_orbs_num(i, j) == 0) break;
-		}
+	while (1) {
+		i = rand() % 5;
+		j = rand() % 6;
+		if (board.get_cell_color(i, j) == color
+			|| board.get_orbs_num(i, j) == 0) break;
 	}
 	index[0] = i;
 	index[1] = j;
-	cout << "exit Algorithm_A\n";
 }
