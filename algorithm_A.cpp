@@ -13,24 +13,20 @@ public:
 	void push(const int r, const int c) {
 		// search if already in the stack. If so, don't push.
 		for (int i = 0; i < size; i++)
-			if (Array[i].first == r && Array[i].second == c)
+			if (Array[i].first == r && Array[i].second == c) 
 				return;
 		Array[size++] = pair<int, int>(r, c);
 	}
-	void pop() {
-		if (size == 0) throw "Can't pop an empty stack!";
-		Array[--size].~pair<int, int>();
-	}
+	void pop() { Array[--size].~pair<int, int>(); }
 	bool Empty() { return (size == 0); }
 	pair<int, int> Top() { return Array[size - 1]; }
 };
 
 class cell {	// a cell on the board
 public:
-	cell() {}
 	int cap;	// how many orbs at most it can contain
 	int size;	// how many orbs are in that cell
-	int col;	// 1 for mine, 0 for oppenent's, -1 for blank
+	int col;	// 1 for mine, 0 for oppenent's, -1 for empty
 	cell& operator=(const cell& another)
 	{
 		cap = another.cap;
@@ -42,8 +38,8 @@ public:
 
 class node {	// one stage of the board
 private:
-	stack ToExp;		// cell in this queue are going to explode
-	stack ToCheck;	// cell in this queue are to be check
+	stack ToExp;		// cell in this stack are going to explode
+	stack ToCheck;		// cell in this stack need to be check
 	bool whoseTurn;		// 1 for my turn, 0 for my oppenent's
 	void check(const int r, const int c) {
 		if (B[r][c].size >= B[r][c].cap)
@@ -54,32 +50,29 @@ private:
 		if (r - 1 >= 0) {
 			B[r - 1][c].col = B[r][c].col;
 			B[r - 1][c].size++;
+			ToCheck.push(r - 1, c);
 		}
 		if (r + 1 < 5) {
 			B[r + 1][c].col = B[r][c].col;
 			B[r + 1][c].size++;
+			ToCheck.push(r + 1, c);
 		}
 		if (c - 1 >= 0) {
 			B[r][c - 1].col = B[r][c].col;
 			B[r][c - 1].size++;
+			ToCheck.push(r, c - 1);
 		}
 		if (c + 1 < 6) {
 			B[r][c + 1].col = B[r][c].col;
 			B[r][c + 1].size++;
+			ToCheck.push(r, c + 1);
 		}
 	}
 	void AfterInsert(const int r, const int c) {
-		int i, j;
 		check(r, c);
 		while (!(ToExp.Empty() && ToCheck.Empty())) {
 			while (!ToExp.Empty()) {
-				i = ToExp.Top().first;
-				j = ToExp.Top().second;
-				Explode(i, j);
-				if (i - 1 >= 0) ToCheck.push(i - 1, j);
-				if (i + 1 < 5) ToCheck.push(i + 1, j);
-				if (j - 1 >= 0) ToCheck.push(i, j - 1);
-				if (j + 1 < 6) ToCheck.push(i, j + 1);
+				Explode(ToExp.Top().first, ToExp.Top().second);
 				ToExp.pop();
 			}
 			while (!ToCheck.Empty()) {
@@ -122,7 +115,6 @@ public:
 };
 
 void algorithm_A(Board board, Player player, int index[]) {
-	cout << "enter my Algorithm\n";
 	int i, j;			// looping index
 	int color = player.get_color();
 	bool candidate[5][6] = { 0 };	// cell suitable to place orb
@@ -153,9 +145,9 @@ void algorithm_A(Board board, Player player, int index[]) {
 			if (Current->child[i][j] != NULL)
 				Current->child[i][j]->initChild();
 	int worstCase[5][6];	/* worst case of number of my orbs
-	of each 1st-generation child, counting their derivative 2nd-generatnio child */
+	of each 1st-generation child, counting their derivative 2nd-generation child */
 	int BWC = 0;	// Best of the worst cases
-	for (i = 0; i < 5; i++)	// initially fill worstCase array
+	for (i = 0; i < 5; i++)	// init worstCase
 		for (j = 0; j < 6; j++)
 			worstCase[i][j] = 220;
 	for (i = 0; i < 5; i++)	// count worst Case
